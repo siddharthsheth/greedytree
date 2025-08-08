@@ -16,7 +16,7 @@ template<size_t d, typename Metric>
 priority_queue<
         BallTreePtr<d, Metric>,
         vector<BallTreePtr<d, Metric>>,
-        typename BallTree<d, Metric>::BallRadiusCompare
+        typename BallTree<d, Metric>::BallTreeCompare
 > BallTree<d, Metric>::heap(){
     using ball_ptr = std::shared_ptr<BallTree<d, Metric>>;
 
@@ -24,7 +24,7 @@ priority_queue<
     std::priority_queue<
         ball_ptr,
         std::vector<ball_ptr>,
-        BallRadiusCompare
+        BallTreeCompare
     > ball_heap;
 
     ball_heap.push(std::make_shared<BallTree<d, Metric>>(*this));

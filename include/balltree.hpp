@@ -11,7 +11,7 @@ public:
     using ball_ptr = std::shared_ptr<BallTree<d, Metric>>;
 
 private:
-    struct BallRadiusCompare {
+    struct BallTreeCompare {
         bool operator()(const ball_ptr& a, const ball_ptr& b) const {
             return a->radius < b->radius; // max-heap
         }
@@ -27,7 +27,7 @@ public:
     BallTree(pt_ptr p);
     bool isleaf();
     double dist(pt_ptr p);
-    priority_queue<ball_ptr, vector<ball_ptr>, BallRadiusCompare> heap();
+    priority_queue<ball_ptr, vector<ball_ptr>, BallTreeCompare> heap();
 };
 
 template<size_t d, typename Metric>

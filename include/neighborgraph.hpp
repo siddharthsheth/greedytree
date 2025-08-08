@@ -29,12 +29,12 @@ private:
     void add_edge(cell_ptr a, cell_ptr b);
     void update_vertex(cell_ptr c);
 
-    struct CellCmp {
+    struct CellCompare {
         bool operator()(const heap_pair a, const heap_pair b)const;
     };
 
 public:
-    priority_queue<heap_pair, vector<heap_pair>, CellCmp> cell_heap;
+    priority_queue<heap_pair, vector<heap_pair>, CellCompare> cell_heap;
     cell_ptr heap_top();
 
     NeighborGraph(vector<pt_ptr> P);

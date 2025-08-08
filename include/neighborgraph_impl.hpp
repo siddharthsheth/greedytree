@@ -98,14 +98,12 @@ void NeighborGraph<d, Metric>::prune_nbrs(cell_ptr c){
 }
 
 template<size_t d, typename Metric>
-bool NeighborGraph<d, Metric>::CellCmp::operator()(
+bool NeighborGraph<d, Metric>::CellCompare::operator()(
                 const heap_pair a,
                 const heap_pair b
     ) const {
-    cell_ptr a_c = a.first;
-    cell_ptr b_c = b.first;
-    double a_r = a.second;
-    double b_r = b.second;
+    auto [a_c, a_r] = a;
+    auto [b_c, b_r] = b;
     if (a_r != b_r)
         return a_r < b_r;
     if (!(*(a_c->center) == *(b_c->center)))

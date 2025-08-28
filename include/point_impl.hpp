@@ -77,20 +77,6 @@ double Point<d,Metric>::dist(const Point& other) const {
     return Metric::template dist<d>(*this, other);
 }
 
-// // Output operator
-// template <std::size_t d, typename Metric>
-// std::ostream& operator<<(std::ostream& os, const Point<d,Metric>& p) {
-//     os << "(";
-//     for (std::size_t i = 0; i < d; ++i) {
-//         os << p[i];
-//         if (i != d - 1) os << ", ";
-//     }
-//     os << ")";
-//     return os;
-// }
-
-// template std::ostream& operator<< <2, L1Metric>(std::ostream&, const Point<2, L1Metric>&);
-
 // Helper function to combine hashes (from Boost)
 inline void hash_combine(std::size_t& seed, std::size_t value) {
     seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);

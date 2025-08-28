@@ -10,7 +10,6 @@ void gonzalez(vector<Point<d, Metric>>& M,
                 vector<Point<d, Metric>*>& pred
             ){
     using Pt = Point<d, Metric>;
-    int n = M.size();
     unordered_map<Pt*, Pt*> rev_nn;
     
     // initialize the first cell
@@ -21,24 +20,23 @@ void gonzalez(vector<Point<d, Metric>>& M,
         rev_nn[&p] = &M[0];
     
     // in each iteration
-    for(size_t i=0; i < n; i++){
+    for(auto it = M.begin(); it != M.end(); it++){
         // a. find the farthest point from its rev_nn
         double max_dist = 0;
-        // PtRefWrapper farthest = std::cref(M[i]);
-        Pt *farthest = &M[i], *predec = &M[i];
-        for(int j=0; j < n; j++){
-            double candidate_dist = M[j].dist(*rev_nn[&M[j]]);
+        Pt *farthest = &(*it), *predec = &(*it);
+        for(auto it_j = M.begin(); it_j != M.end(); it_j++){
+            double candidate_dist = (*it_j).dist(*rev_nn[&(*it_j)]);
             if(candidate_dist > max_dist){
-                farthest = &M[j];
-                predec = rev_nn[&M[j]];
+                farthest = &(*it_j);
+                predec = rev_nn[&(*it_j)];
                 max_dist = candidate_dist;
             }
         }
         
         // b. for each uninserted point, check if it is closer than current rev_nn
-        for(size_t j=0; j < n; j++)
-            if(M[j].dist(*rev_nn[&M[j]]) > M[j].dist(*farthest))
-                rev_nn[&M[j]] = farthest;
+        for(auto it_j = M.begin(); it_j != M.end(); it_j++)
+            if((*it_j).dist(*rev_nn[&(*it_j)]) > (*it_j).dist(*farthest))
+                rev_nn[&(*it_j)] = farthest;
         
         // c. Update the output
         gp.push_back(farthest);

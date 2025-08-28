@@ -21,13 +21,13 @@ void gonzalez(vector<Point<d, Metric>>& M,
                 vector<Point<d, Metric>*>& pred
             );
 
-// template <std::size_t d, typename Metric>
-// void clarkson(PtRefVec<d, Metric>& M,
-//                 PtRefVec<d, Metric>& gp,
-//                 PtRefVec<d, Metric>& pred
-            // );
+template <std::size_t d, typename Metric>
+void clarkson(vector<Point<d, Metric>>& M,
+                vector<const Point<d, Metric>*>& gp,
+                vector<const Point<d, Metric>*>& pred
+            );
 
 #include "greedy_gonzalez_impl.hpp"
-// #include "greedy_clarkson_impl.hpp"
+#include "greedy_clarkson_impl.hpp"
 
 #endif

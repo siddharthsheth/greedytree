@@ -11,7 +11,7 @@ template<size_t d, typename Metric>
 class Cell {
 public:
     using pt = const Point<d, Metric>;
-    using pt_ptr = std::shared_ptr<const Point<d, Metric>>;
+    using pt_ptr = const Point<d, Metric>*;
     
     static int next_id;
     int id;

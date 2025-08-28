@@ -1,10 +1,12 @@
 template <std::size_t d, typename Metric>
-NeighborGraph<d, Metric>::NeighborGraph(vector<pt_ptr> P){
-    auto root_cell = std::make_shared<Cell<d, Metric>>(P[0]);
-    for(auto p: P)
-        (*root_cell).add_point(p);
-    add_vertex(root_cell);
-    cell_heap.push({root_cell, root_cell->radius});
+NeighborGraph<d, Metric>::NeighborGraph(vector<Point<d, Metric>>& P){
+    auto root_cell = std::make_unique<Cell<d, Metric>>(P[0]);
+    for(auto& p: P)
+        (*root_cell).add_point(&p);
+    add_vertex(root_cell.get());
+    // cell_heap.push({std::move(root_cell), root_cell->radius});
+    cell_heap_vec.push_back({std::move(root_cell), root_cell->radius});
+    std::push_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
 }
 
 template <std::size_t d, typename Metric>
@@ -25,26 +27,28 @@ bool NeighborGraph<d, Metric>::is_close_enough(const cell_ptr a, const cell_ptr 
 template <std::size_t d, typename Metric>
 void NeighborGraph<d, Metric>::add_cell(){
     auto parent = heap_top();
-    auto newcell = std::make_shared<Cell<d, Metric>>(parent->farthest);
-
-    rebalance(newcell, parent);
+    auto new_cell = std::make_unique<Cell<d, Metric>>(parent->farthest);
+    Cell<d, Metric>* newcellptr = new_cell.get();
+    rebalance(newcellptr, parent);
     auto neighbors = boost::adjacent_vertices(vertex[parent], g);
     for(auto nbr: make_iterator_range(neighbors))
-        rebalance(newcell, g[nbr]);
+        rebalance(newcellptr, g[nbr]);
     
-    add_vertex(newcell);
+    add_vertex(newcellptr);
     // cout << "Nbrs of nbrs" << endl;
-    for(auto newnbr: nbrs_of_nbrs(parent))
-        if(is_close_enough(newcell, newnbr))
-            add_edge(newcell, newnbr);
+    for(auto& newnbr: nbrs_of_nbrs(parent))
+        if(is_close_enough(newcellptr, newnbr))
+            add_edge(newcellptr, newnbr);
     
     // cout << "Pruning" << endl;
-    neighbors = boost::adjacent_vertices(vertex[newcell], g);
+    neighbors = boost::adjacent_vertices(vertex[newcellptr], g);
     for(auto nbr: make_iterator_range(neighbors))
         prune_nbrs(g[nbr]);
-    prune_nbrs(newcell);
+    prune_nbrs(newcellptr);
     
-    cell_heap.push({newcell, newcell->radius});
+    // cell_heap.push({std::move(new_cell), newcellptr->radius});
+    cell_heap_vec.push_back({std::move(new_cell), newcellptr->radius});
+    std::push_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
     // return newcell;
 }
 
@@ -53,10 +57,10 @@ void NeighborGraph<d, Metric>::rebalance(
                                 cell_ptr a,
                                 cell_ptr b
                             ){
-    unordered_set<std::shared_ptr<const Point<d, Metric>>> to_move;
+    vector<const Point<d, Metric>*> to_move;
     for(auto p: b->points)
         if(a->dist(*p) < b->dist(*p)){
-            to_move.insert(p);
+            to_move.push_back(p);
         }
     for(auto p: to_move){
         a->add_point(p);
@@ -99,11 +103,11 @@ void NeighborGraph<d, Metric>::prune_nbrs(cell_ptr c){
 
 template<size_t d, typename Metric>
 bool NeighborGraph<d, Metric>::CellCompare::operator()(
-                const heap_pair a,
-                const heap_pair b
+                const heap_pair& a,
+                const heap_pair& b
     ) const {
-    auto [a_c, a_r] = a;
-    auto [b_c, b_r] = b;
+    auto& [a_c, a_r] = a;
+    auto& [b_c, b_r] = b;
     if (a_r != b_r)
         return a_r < b_r;
     if (!(*(a_c->center) == *(b_c->center)))
@@ -113,19 +117,24 @@ bool NeighborGraph<d, Metric>::CellCompare::operator()(
 
 template<size_t d, typename Metric>
 CellPtr<d, Metric> NeighborGraph<d, Metric>::heap_top(){
-    bool finish = false;
-    heap_pair top;
-    while(!finish){
-        top = cell_heap.top();
-        cell_ptr c = top.first;
-        double r = top.second;
-        if(r > c->radius){
-            cell_heap.pop();
-            cell_heap.push({c, c->radius});
+    while (!cell_heap_vec.empty()) {
+        // mutable access to the top element
+        auto& top = cell_heap_vec.front();
+        Cell<d, Metric>* c = top.first.get();
+        if(top.second > c->radius){
+            // pop top
+            std::pop_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
+            auto cell = std::move(cell_heap_vec.back().first);
+            cell_heap_vec.pop_back();
+
+            // update priority
+            double new_priority = cell->radius;
+            cell_heap_vec.push_back({std::move(cell), new_priority});
+            std::push_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
         }
         else
-            finish = true;
-        // cout << "getting top of heap: " << r << " cell radius " << c->radius << endl;
+            // cout << "getting top of heap: " << *(c->center) << " cell radius " << c->radius << endl;
+            return c;
     }
-    return top.first;
+    return nullptr;
 }

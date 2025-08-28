@@ -13,12 +13,13 @@ class NeighborGraph {
 public:
     using Graph = boost::adjacency_list<
         boost::vecS, boost::vecS, boost::undirectedS,
-        std::shared_ptr<Cell<d, Metric>>
+        Cell<d, Metric>*
     >;
     using Vertex = typename boost::graph_traits<Graph>::vertex_descriptor;
-    using pt_ptr = std::shared_ptr<const Point<d, Metric>>;
-    using cell_ptr = std::shared_ptr<Cell<d, Metric>>;
-    using heap_pair = pair<cell_ptr, double>;
+    // using pt_ptr = std::shared_ptr<const Point<d, Metric>>;
+    using pt_ptr = Point<d, Metric>*;
+    using cell_ptr = Cell<d, Metric>*;
+    using heap_pair = pair<std::unique_ptr<Cell<d, Metric>>, double>;
 
 private:
     Graph g;
@@ -30,14 +31,16 @@ private:
     void update_vertex(cell_ptr c);
 
     struct CellCompare {
-        bool operator()(const heap_pair a, const heap_pair b)const;
+        bool operator()(const heap_pair& a, const heap_pair& b)const;
     };
 
 public:
-    priority_queue<heap_pair, vector<heap_pair>, CellCompare> cell_heap;
+    // priority_queue<heap_pair, vector<heap_pair>, CellCompare> cell_heap;
+    vector<heap_pair> cell_heap_vec;
+    CellCompare comparator;
     cell_ptr heap_top();
 
-    NeighborGraph(vector<pt_ptr> P);
+    NeighborGraph(vector<Point<d, Metric>>& P);
     void add_cell();
     void rebalance(cell_ptr a, cell_ptr b);
     vector<cell_ptr> nbrs_of_nbrs(cell_ptr c);
@@ -46,10 +49,10 @@ public:
 };
 
 template<size_t d, typename Metric>
-using CellPtrVec = vector<std::shared_ptr<Cell<d, Metric>>>;
+using CellPtrVec = vector<Cell<d, Metric>*>;
 
 template<size_t d, typename Metric>
-using CellPtr = std::shared_ptr<Cell<d, Metric>>;
+using CellPtr = Cell<d, Metric>*;
 
 #include "neighborgraph_impl.hpp"
 

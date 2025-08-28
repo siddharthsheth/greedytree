@@ -1,7 +1,7 @@
 template <std::size_t d, typename Metric>
-void clarkson(PtPtrVec<d, Metric>& M,
-                PtPtrVec<d, Metric>& gp,
-                PtPtrVec<d, Metric>& pred
+void clarkson(vector<Point<d, Metric>>& M,
+                vector<const Point<d, Metric>*>& gp,
+                vector<const Point<d, Metric>*>& pred
             ){
     NeighborGraph<d, Metric> G(M);
     CellPtr<d, Metric> root_cell = G.heap_top();

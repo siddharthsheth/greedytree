@@ -6,8 +6,8 @@ using namespace std;
 
 template <std::size_t d, typename Metric>
 void gonzalez(vector<Point<d, Metric>>& M,
-                vector<Point<d, Metric>*>& gp,
-                vector<Point<d, Metric>*>& pred
+                vector<const Point<d, Metric>*>& gp,
+                vector<const Point<d, Metric>*>& pred
             ){
     using Pt = Point<d, Metric>;
     unordered_map<Pt*, Pt*> rev_nn;

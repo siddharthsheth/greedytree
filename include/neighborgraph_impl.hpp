@@ -28,7 +28,7 @@ template <std::size_t d, typename Metric>
 void NeighborGraph<d, Metric>::add_cell(){
     auto parent = heap_top();
     auto new_cell = std::make_unique<Cell<d, Metric>>(parent->farthest);
-    Cell<d, Metric>* newcellptr = new_cell.get();
+    cell_ptr newcellptr = new_cell.get();
     rebalance(newcellptr, parent);
     auto neighbors = boost::adjacent_vertices(vertex[parent], g);
     for(auto nbr: make_iterator_range(neighbors))
@@ -120,16 +120,15 @@ CellPtr<d, Metric> NeighborGraph<d, Metric>::heap_top(){
     while (!cell_heap_vec.empty()) {
         // mutable access to the top element
         auto& top = cell_heap_vec.front();
-        Cell<d, Metric>* c = top.first.get();
+        cell_ptr c = top.first.get();
         if(top.second > c->radius){
             // pop top
             std::pop_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
-            auto cell = std::move(cell_heap_vec.back().first);
-            cell_heap_vec.pop_back();
 
             // update priority
-            double new_priority = cell->radius;
-            cell_heap_vec.push_back({std::move(cell), new_priority});
+            cell_heap_vec.back().second = c->radius;
+
+            // push it back
             std::push_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
         }
         else{

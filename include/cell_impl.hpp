@@ -33,9 +33,9 @@ Cell<d,Metric>::Cell(pt_ptr p) :
 template <size_t d, typename Metric>
 void Cell<d,Metric>::add_point(pt_ptr p) {
     points.insert(p);
-    double d_p = dist(*p);
-    if (d_p > radius) {
-        radius = d_p;
+    double dist_p = dist(*p);
+    if (dist_p > radius) {
+        radius = dist_p;
         farthest = p;
     }
     debug_log("New farthest point: " << *farthest << " at distance " << dist(*farthest));
@@ -60,8 +60,9 @@ template <size_t d, typename Metric>
 void Cell<d,Metric>::update_radius() {
     radius = 0;
     for (auto& p : points) {
-        if (dist(*p) > radius) {
-            radius = dist(*p);
+        double dist_p = dist(*p);
+        if (dist_p > radius) {
+            radius = dist_p;
             farthest = p;
         }
     }

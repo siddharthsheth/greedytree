@@ -1,6 +1,14 @@
 #ifndef Cell_H
 #define Cell_H
 
+#define DEBUG
+
+#ifdef DEBUG
+#  define debug_log(x) std::cout << x << std::endl
+#else
+#  define debug_log(x) do {} while (0)
+#endif
+
 #include "point.hpp"
 #include <unordered_set>
 #include <memory>

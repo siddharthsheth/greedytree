@@ -35,12 +35,12 @@ void NeighborGraph<d, Metric>::add_cell(){
         rebalance(newcellptr, g[nbr]);
     
     add_vertex(newcellptr);
-    // cout << "Nbrs of nbrs" << endl;
+    debug_log("Nbrs of nbrs");
     for(auto& newnbr: nbrs_of_nbrs(parent))
         if(is_close_enough(newcellptr, newnbr))
             add_edge(newcellptr, newnbr);
     
-    // cout << "Pruning" << endl;
+    debug_log("Pruning");
     neighbors = boost::adjacent_vertices(vertex[newcellptr], g);
     for(auto nbr: make_iterator_range(neighbors))
         prune_nbrs(g[nbr]);
@@ -132,9 +132,10 @@ CellPtr<d, Metric> NeighborGraph<d, Metric>::heap_top(){
             cell_heap_vec.push_back({std::move(cell), new_priority});
             std::push_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
         }
-        else
-            // cout << "getting top of heap: " << *(c->center) << " cell radius " << c->radius << endl;
+        else{
+            debug_log("getting top of heap: " << *(c->center) << " cell radius " << c->radius);
             return c;
+        }
     }
     return nullptr;
 }

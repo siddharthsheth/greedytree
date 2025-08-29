@@ -15,5 +15,5 @@ void clarkson(vector<Point<d, Metric>>& M,
         pred.push_back(cell->center);
         G.add_cell();
     }
-    cout << "Number of cells created: " << Cell<d, Metric>::next_id << endl;
+    debug_log("Number of cells created: " << CellT::next_id);
 }

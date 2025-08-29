@@ -7,7 +7,7 @@ Cell<d,Metric>::Cell() :
                         center(&origin<d, Metric>),
                         radius(0),
                         farthest(&origin<d, Metric>){
-    std::cout << "Created cell centered at origin." << endl;
+    debug_log("Created cell centered at origin.");
 }
 
 template <size_t d, typename Metric>
@@ -17,7 +17,7 @@ Cell<d,Metric>::Cell(pt& p) :
                     radius(0),
                     farthest(&p) {
     points.insert(&p);
-    std::cout << "Created cell with center " << *center << endl;
+    debug_log("Created cell with center " << *center);
 }
 
 template <size_t d, typename Metric>
@@ -27,7 +27,7 @@ Cell<d,Metric>::Cell(pt_ptr p) :
                         radius(0),
                         farthest(p) {
     points.insert(p);
-    std::cout << "Created cell with pointer center " << *center << endl;
+    debug_log("Created cell with pointer center " << *center);
 }
 
 template <size_t d, typename Metric>
@@ -38,7 +38,7 @@ void Cell<d,Metric>::add_point(pt_ptr p) {
         radius = d_p;
         farthest = p;
     }
-    cout << "New farthest point: " << *farthest << " at distance " << dist(*farthest) << endl;
+    debug_log("New farthest point: " << *farthest << " at distance " << dist(*farthest));
 }
 
 template <size_t d, typename Metric>

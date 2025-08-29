@@ -1,0 +1,61 @@
+cmake_minimum_required(VERSION 3.14)
+project(GreedyTree LANGUAGES CXX)
+
+if (APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
+# Use C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Add include directory
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
+# ------------------------------
+# Boost
+# ------------------------------
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+# --- Add GoogleTest ---
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/heads/main.zip
+)
+# For testing only
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+# --- Add test executable ---
+add_executable(greedy_tests
+    tests/test_balltree.cpp
+    tests/test_greedy.cpp  # replace or add other test files as needed
+)
+
+# --- Link with GTest and your main target (if needed) ---
+target_link_libraries(greedy_tests
+    # PRIVATE
+    gtest_main
+    gtest
+    # greedytree           # your main library if you have one
+    # ${Boost_LIBRARIES}
+)
+
+# Optional: automatically discover and register tests
+include(GoogleTest)
+gtest_discover_tests(greedy_tests)
+
+# --------------------------------------------
+# Add a standalone executable for test.cpp
+# --------------------------------------------
+add_executable(test_main test.cpp)
+
+# Optional: link Boost or other libraries
+target_link_libraries(test_main
+    ${Boost_LIBRARIES}
+)

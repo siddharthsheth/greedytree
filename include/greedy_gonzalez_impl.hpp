@@ -1,6 +1,5 @@
 #include"greedy.hpp"
-#include<map>
-#include<functional>
+#include<unordered_map>
 
 using namespace std;
 

@@ -16,7 +16,7 @@ Cell<d,Metric>::Cell(pt& p) :
                     center(&p),
                     radius(0),
                     farthest(&p) {
-    points.insert(&p);
+    points.push_back(&p);
     debug_log("Created cell with center " << *center);
 }
 
@@ -26,24 +26,19 @@ Cell<d,Metric>::Cell(pt_ptr p) :
                         center(p),
                         radius(0),
                         farthest(p) {
-    points.insert(p);
+    points.push_back(p);
     debug_log("Created cell with pointer center " << *center);
 }
 
 template <size_t d, typename Metric>
 void Cell<d,Metric>::add_point(pt_ptr p) {
-    points.insert(p);
+    points.push_back(p);
     double dist_p = dist(*p);
     if (dist_p > radius) {
         radius = dist_p;
         farthest = p;
     }
     debug_log("New farthest point: " << *farthest << " at distance " << dist(*farthest));
-}
-
-template <size_t d, typename Metric>
-void Cell<d,Metric>::remove_point(pt_ptr p) {
-    points.erase(p);
 }
 
 template <size_t d, typename Metric>
@@ -71,11 +66,6 @@ void Cell<d,Metric>::update_radius() {
 template <size_t d, typename Metric>
 size_t Cell<d,Metric>::size() const {
     return points.size();
-}
-
-template <size_t d, typename Metric>
-bool Cell<d,Metric>::contains(pt_ptr p) const {
-    return points.find(p) != points.end();
 }
 
 // Compare Cells by id

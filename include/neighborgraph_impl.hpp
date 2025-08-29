@@ -57,18 +57,19 @@ void NeighborGraph<d, Metric>::rebalance(
                                 cell_ptr a,
                                 cell_ptr b
                             ){
-    vector<const Point<d, Metric>*> to_move;
+    vector<const Point<d, Metric>*> to_move, to_stay;
     for(auto p: b->points)
-        if(a->dist(*p) < b->dist(*p)){
+        if(a->dist(*p) < b->dist(*p))
             to_move.push_back(p);
-        }
-    for(auto p: to_move){
+        else
+            to_stay.push_back(p);
+    b->points = std::move(to_stay);
+    for(auto &p: to_move)
         a->add_point(p);
-        b->remove_point(p);
-    }
-    if(!to_move.empty())
+    if(!to_move.empty()){
         b->update_radius();
         // update_vertex(b);
+    }
 }
 
 template <std::size_t d, typename Metric>

@@ -10,7 +10,7 @@
 #endif
 
 #include "point.hpp"
-#include <unordered_set>
+#include <vector>
 #include <memory>
 
 using namespace std;
@@ -26,7 +26,7 @@ public:
 
     pt_ptr center;
     double radius;
-    unordered_set<pt_ptr> points;
+    vector<pt_ptr> points;
     pt_ptr farthest;
 
     Cell();
@@ -36,10 +36,8 @@ public:
     double dist(pt& p) const;
     double dist(const Cell& c) const;
     void add_point(pt_ptr p);
-    void remove_point(pt_ptr p);
     void update_radius();
     size_t size() const;
-    bool contains(pt_ptr p) const;
     bool operator==(const Cell& other) const;
 };
 

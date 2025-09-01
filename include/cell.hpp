@@ -18,24 +18,24 @@ using namespace std;
 template<size_t d, typename Metric>
 class Cell {
 public:
-    using pt = const Point<d, Metric>;
-    using pt_ptr = const Point<d, Metric>*;
+    using Pt = const Point<d, Metric>;
+    using PtPtr = const Point<d, Metric>*;
     
     static int next_id;
     int id;
 
-    pt_ptr center;
+    PtPtr center;
     double radius;
-    vector<pt_ptr> points;
-    pt_ptr farthest;
+    vector<PtPtr> points;
+    PtPtr farthest;
 
     Cell();
-    Cell(pt& p);
-    Cell(pt_ptr p);
+    Cell(Pt& p);
+    Cell(PtPtr p);
     
-    double dist(pt& p) const;
+    double dist(Pt& p) const;
     double dist(const Cell& c) const;
-    void add_point(pt_ptr p);
+    void add_point(PtPtr p);
     void update_radius();
     size_t size() const;
     bool operator==(const Cell& other) const;

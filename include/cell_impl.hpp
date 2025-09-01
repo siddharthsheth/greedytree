@@ -11,7 +11,7 @@ Cell<d,Metric>::Cell() :
 }
 
 template <size_t d, typename Metric>
-Cell<d,Metric>::Cell(pt& p) :
+Cell<d,Metric>::Cell(Pt& p) :
                     id(next_id++),
                     center(&p),
                     radius(0),
@@ -21,7 +21,7 @@ Cell<d,Metric>::Cell(pt& p) :
 }
 
 template <size_t d, typename Metric>
-Cell<d,Metric>::Cell(pt_ptr p) :
+Cell<d,Metric>::Cell(PtPtr p) :
                         id(next_id++),
                         center(p),
                         radius(0),
@@ -31,7 +31,7 @@ Cell<d,Metric>::Cell(pt_ptr p) :
 }
 
 template <size_t d, typename Metric>
-void Cell<d,Metric>::add_point(pt_ptr p) {
+void Cell<d,Metric>::add_point(PtPtr p) {
     points.push_back(p);
     double dist_p = dist(*p);
     if (dist_p > radius) {
@@ -42,7 +42,7 @@ void Cell<d,Metric>::add_point(pt_ptr p) {
 }
 
 template <size_t d, typename Metric>
-double Cell<d,Metric>::dist(const Point<d, Metric>& p) const {
+double Cell<d,Metric>::dist(const Pt& p) const {
     return (*center).dist(p);
 }
 

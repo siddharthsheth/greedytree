@@ -11,15 +11,15 @@
 template<size_t d, typename Metric>
 class NeighborGraph {
 public:
-    using PtPtr = Point<d, Metric>*;
     using Pt = Point<d, Metric>;
+    using PtPtr = Point<d, Metric>*;
     using CellPtr = Cell<d, Metric>*;
     using Graph = boost::adjacency_list<
         boost::vecS, boost::vecS, boost::undirectedS,
         CellPtr
     >;
     using Vertex = typename boost::graph_traits<Graph>::vertex_descriptor;
-    using heap_pair = pair<std::unique_ptr<Cell<d, Metric>>, double>;
+    using HeapPair = pair<std::unique_ptr<Cell<d, Metric>>, double>;
 
 private:
     Graph g;
@@ -31,11 +31,11 @@ private:
     void update_vertex(CellPtr c);
 
     struct CellCompare {
-        bool operator()(const heap_pair& a, const heap_pair& b)const;
+        bool operator()(const HeapPair& a, const HeapPair& b)const;
     };
 
 public:
-    vector<heap_pair> cell_heap_vec;
+    vector<HeapPair> cell_heap_vec;
     CellCompare comparator;
     CellPtr heap_top();
 

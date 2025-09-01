@@ -99,8 +99,8 @@ void NeighborGraph<d, Metric>::prune_nbrs(CellPtr c){
 
 template<size_t d, typename Metric>
 bool NeighborGraph<d, Metric>::CellCompare::operator()(
-                const heap_pair& a,
-                const heap_pair& b
+                const HeapPair& a,
+                const HeapPair& b
     ) const {
     auto& [a_c, a_r] = a;
     auto& [b_c, b_r] = b;

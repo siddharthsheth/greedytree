@@ -6,8 +6,6 @@
 
 template<size_t d, typename Metric>
 class BallTree {
-private:
-
 public:    
     struct BallTreeCompare {
         bool operator()(const BallTree*& a, const BallTree*& b) const {
@@ -17,7 +15,11 @@ public:
 
     using PtPtr = Point<d, Metric>*;
     using BallTreeUPtr = std::unique_ptr<BallTree<d, Metric>>;
-    using BallHeap = priority_queue<BallTree<d, Metric>*, vector<BallTree<d, Metric>*>, BallTreeCompare>;
+    using BallHeap = std::priority_queue<
+                                BallTree<d, Metric>*,
+                                std::vector<BallTree<d, Metric>*>,
+                                BallTreeCompare
+                            >;
     
     PtPtr center;
     double radius;
@@ -25,7 +27,7 @@ public:
     BallTreeUPtr left;
     BallTreeUPtr right;
 
-    BallTree(PtPtr p);
+    BallTree(const PtPtr p);
     bool isleaf();
     double dist(PtPtr p);
     BallHeap heap();
@@ -42,7 +44,7 @@ using BallHeap = std::priority_queue<
                                     BallTree<d, Metric>*,
                                     vector<BallTree<d, Metric>*>,
                                     typename BallTree<d, Metric>::BallTreeCompare
-                                    >;
+                                >;
 
 #include<balltree_impl.hpp>
 

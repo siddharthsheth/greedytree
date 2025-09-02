@@ -13,11 +13,7 @@ double BallTree<d, Metric>::dist(PtPtr p){
 }
 
 template<size_t d, typename Metric>
-priority_queue<
-        BallTree<d, Metric>*,
-        vector<BallTree<d, Metric>*>,
-        typename BallTree<d, Metric>::BallTreeCompare
-> BallTree<d, Metric>::heap(){
+BallHeap<d, Metric> BallTree<d, Metric>::heap(){
     // using BallTreePtr = BallTree<d, Metric>>;
 
     // Define the heap type with decltype

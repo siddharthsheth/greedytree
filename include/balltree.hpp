@@ -37,6 +37,13 @@ using BallTreeUPtr = std::unique_ptr<BallTree<d, Metric>>;
 template <std::size_t d, typename Metric>
 using PtPtrVec = std::vector<const Point<d, Metric>*>;
 
+template<size_t d, typename Metric>
+using BallHeap = std::priority_queue<
+                                    BallTree<d, Metric>*,
+                                    vector<BallTree<d, Metric>*>,
+                                    typename BallTree<d, Metric>::BallTreeCompare
+                                    >;
+
 #include<balltree_impl.hpp>
 
 #endif

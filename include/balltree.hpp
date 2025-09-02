@@ -6,32 +6,36 @@
 
 template<size_t d, typename Metric>
 class BallTree {
-public:
-    using pt_ptr = std::shared_ptr<const Point<d, Metric>>;
-    using ball_ptr = std::shared_ptr<BallTree<d, Metric>>;
-
 private:
+
+public:    
     struct BallTreeCompare {
-        bool operator()(const ball_ptr& a, const ball_ptr& b) const {
+        bool operator()(const BallTree*& a, const BallTree*& b) const {
             return a->radius < b->radius; // max-heap
         }
     };
 
-public:
-    pt_ptr center;
+    using PtPtr = Point<d, Metric>*;
+    using BallTreeUPtr = std::unique_ptr<BallTree<d, Metric>>;
+    using BallHeap = priority_queue<BallTree<d, Metric>*, vector<BallTree<d, Metric>*>, BallTreeCompare>;
+    
+    PtPtr center;
     double radius;
     size_t _size;
-    ball_ptr left;
-    ball_ptr right;
+    BallTreeUPtr left;
+    BallTreeUPtr right;
 
-    BallTree(pt_ptr p);
+    BallTree(PtPtr p);
     bool isleaf();
-    double dist(pt_ptr p);
-    priority_queue<ball_ptr, vector<ball_ptr>, BallTreeCompare> heap();
+    double dist(PtPtr p);
+    BallHeap heap();
 };
 
 template<size_t d, typename Metric>
-using BallTreePtr = std::shared_ptr<BallTree<d, Metric>>;
+using BallTreeUPtr = std::unique_ptr<BallTree<d, Metric>>;
+
+template <std::size_t d, typename Metric>
+using PtPtrVec = std::vector<const Point<d, Metric>*>;
 
 #include<balltree_impl.hpp>
 

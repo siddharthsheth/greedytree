@@ -5,8 +5,7 @@
  * @brief BallTree data structure for efficient spatial queries in metric spaces.
  *
  * Defines the BallTree class template and related types for hierarchical clustering
- * and nearest neighbor search. Designed for compatibility with mlpack and generic
- * metric-based algorithms.
+ * and nearest neighbor search. 
  */
 
 #ifndef BALLTREE_H

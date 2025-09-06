@@ -6,8 +6,7 @@
  *
  * Defines the NeighborGraph class template and related types for representing
  * and manipulating a graph of cells in a metric space. Uses Boost's adjacency_list
- * for efficient graph operations. Designed for compatibility with mlpack and
- * generic metric-based algorithms.
+ * for efficient graph operations.
  */
 
 #ifndef NEIGHBORGRAPH_H

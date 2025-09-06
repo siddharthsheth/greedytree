@@ -5,7 +5,6 @@
  * @brief Point class template for d-dimensional metric spaces.
  *
  * Defines the Point class and related operators for use in spatial algorithms.
- * Designed for compatibility with mlpack and generic metric-based code.
  */
 
 #ifndef POINT_H

@@ -5,7 +5,6 @@
  * @brief Metric structures for norm and distance calculations in d-dimensional space.
  *
  * Provides L2 (Euclidean) and L1 (Manhattan) metrics for use with Point classes.
- * Designed for compatibility with mlpack and generic metric-based algorithms.
  */
 
 #ifndef METRICS_H

@@ -3,9 +3,8 @@
  * @author Siddarth Sheth
  * @brief Greedy clustering algorithms (Gonzalez and Clarkson) for metric spaces.
  *
- * This file provides function templates for greedy clustering algorithms, including
+ * Function templates for greedy clustering algorithms, including
  * Gonzalez's and Clarkson's algorithms, for use in high-dimensional metric spaces.
- * These are suitable for integration with mlpack and follow mlpack documentation standards.
  */
 
 #ifndef GREEDY_H

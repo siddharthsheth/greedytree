@@ -1,13 +1,31 @@
+/**
+ * @file metrics.hpp
+ * @author Siddarth Sheth
+ * @brief Metric structures for norm and distance calculations in d-dimensional space.
+ *
+ * Provides L2 (Euclidean) and L1 (Manhattan) metrics for use with Point classes.
+ */
+
 #ifndef METRICS_H
 #define METRICS_H
 
 #include <cmath>
 
-// Forward declaration
+// Forward declaration of Point class template.
 template <std::size_t d, typename Metric> class Point;
 
-// L2 (Euclidean) norm and distance
+/**
+ * @brief L2 (Euclidean) metric for norm and distance calculations.
+ *
+ * Provides static methods for computing the L2 norm and distance between points.
+ */
 struct L2Metric {
+    /**
+     * @brief Compute the L2 norm (Euclidean length) of a point.
+     * @tparam d Dimensionality of the point.
+     * @param p The point whose norm is to be computed.
+     * @return The L2 norm of the point.
+     */
     template <std::size_t d>
     static double norm(const Point<d, L2Metric>& p) {
         double sum = 0.0;
@@ -16,6 +34,13 @@ struct L2Metric {
         return std::sqrt(sum);
     }
 
+    /**
+     * @brief Compute the L2 distance (Euclidean distance) between two points.
+     * @tparam d Dimensionality of the points.
+     * @param a The first point.
+     * @param b The second point.
+     * @return The L2 distance between a and b.
+     */
     template <std::size_t d>
     static double dist(const Point<d, L2Metric>& a, const Point<d, L2Metric>& b) {
         double sum = 0.0;
@@ -27,8 +52,18 @@ struct L2Metric {
     }
 };
 
-// L1 (Manhattan) norm and distance
+/**
+ * @brief L1 (Manhattan) metric for norm and distance calculations.
+ *
+ * Provides static methods for computing the L1 norm and distance between points.
+ */
 struct L1Metric {
+    /**
+     * @brief Compute the L1 norm (Manhattan length) of a point.
+     * @tparam d Dimensionality of the point.
+     * @param p The point whose norm is to be computed.
+     * @return The L1 norm of the point.
+     */
     template <std::size_t d>
     static double norm(const Point<d, L1Metric>& p) {
         double sum = 0.0;
@@ -37,6 +72,13 @@ struct L1Metric {
         return sum;
     }
 
+    /**
+     * @brief Compute the L1 distance (Manhattan distance) between two points.
+     * @tparam d Dimensionality of the points.
+     * @param a The first point.
+     * @param b The second point.
+     * @return The L1 distance between a and b.
+     */
     template <std::size_t d>
     static double dist(const Point<d, L1Metric>& a, const Point<d, L1Metric>& b) {
         double sum = 0.0;

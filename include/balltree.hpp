@@ -35,7 +35,7 @@ public:
          * @param b Pointer to second BallTree node.
          * @return True if a's radius is less than b's (max-heap).
          */
-        bool operator()(const BallTree*& a, const BallTree*& b) const {
+        bool operator()(const BallTree* a, const BallTree* b) const {
             return a->radius < b->radius; // max-heap
         }
     };
@@ -43,7 +43,7 @@ public:
     /**
      * @brief Pointer to a Point in d-dimensional space.
      */
-    using PtPtr = Point<d, Metric>*;
+    using PtPtr = const Point<d, Metric>*;
     /**
      * @brief Unique pointer to a BallTree node.
      */
@@ -82,7 +82,7 @@ public:
      * @brief Construct a BallTree node with a given center point.
      * @param p Pointer to the center point.
      */
-    BallTree(const PtPtr p);
+    BallTree(PtPtr& p);
     /**
      * @brief Check if this node is a leaf (no children).
      * @return True if leaf node, false otherwise.
@@ -111,7 +111,7 @@ using BallTreeUPtr = std::unique_ptr<BallTree<d, Metric>>;
  * @brief Type alias for vector of constant Point pointers.
  */
 template <std::size_t d, typename Metric>
-using PtPtrVec = std::vector<const Point<d, Metric>*>;
+using PtVec = std::vector<Point<d, Metric>>;
 
 /**
  * @brief Type alias for max-heap of BallTree pointers, ordered by radius.
@@ -122,6 +122,9 @@ using BallHeap = std::priority_queue<
                                     vector<BallTree<d, Metric>*>,
                                     typename BallTree<d, Metric>::BallTreeCompare
                                 >;
+
+template<size_t d, typename Metric>
+BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts);
 
 #include<balltree_impl.hpp>
 

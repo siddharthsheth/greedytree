@@ -1,5 +1,5 @@
 template<size_t d, typename Metric>
-BallTree<d, Metric>::BallTree(PtPtr p)
+BallTree<d, Metric>::BallTree(PtPtr& p)
     : center(p), radius(0), _size(1), left(nullptr), right(nullptr) {}
 
 template<size_t d, typename Metric>
@@ -17,32 +17,32 @@ BallHeap<d, Metric> BallTree<d, Metric>::heap(){
     // Define the heap type with decltype
     BallHeap ball_heap;
 
-    ball_heap.push(this->get());
+    ball_heap.push(this);
     return ball_heap;
 }
 
 
 template<size_t d, typename Metric>
-BallTreeUPtr<d, Metric> greedy_tree(PtPtrVec<d, Metric>& M){
-    auto root = _construct_tree(M);
-    _compute_radii(root);
-    return root;
+BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts){
+    auto root = _construct_tree(pts);
+    _compute_radii(root.get());
+    return std::move(root);
 }
 
 template<size_t d, typename Metric>
-BallTreeUPtr<d, Metric> _construct_tree(PtPtrVec<d, Metric>& M)
+BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
 {
     using PtPtr = const Point<d, Metric>*;
-    using BallTreePtr = const BallTree<d, Metric>*;
+    using BallTreePtr = BallTree<d, Metric>*;
     
     vector<PtPtr> gp, pred;
-    clarkson(M, gp, pred);
+    clarkson(pts, gp, pred);
     
     auto root = std::make_unique<BallTree<d, Metric>>(gp[0]);
     
     unordered_map<PtPtr, BallTreePtr> leaf;
-    leaf[gp[0]] = root;
-    
+    leaf[gp[0]] = root.get();
+
     for(auto i = 1; i < gp.size(); i++){
         auto node = leaf[pred[i]];
         
@@ -53,15 +53,15 @@ BallTreeUPtr<d, Metric> _construct_tree(PtPtrVec<d, Metric>& M)
         leaf[gp[i]] = (node->right).get();
     }
 
-    return root;
+    return std::move(root);
 }
 
 template <size_t d, typename Metric>
-void _compute_radii(BallTreeUPtr<d, Metric> root) {
+void _compute_radii(BallTree<d, Metric>* root) {
     using BallTreePtr = BallTree<d, Metric>*;
 
     std::stack<std::pair<BallTreePtr, bool>> stk;
-    stk.push({root.get(), false});
+    stk.push({root, false});
     
     while (!stk.empty()) {
         auto [node, visited] = stk.top();

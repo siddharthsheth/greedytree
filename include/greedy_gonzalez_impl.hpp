@@ -19,7 +19,7 @@ void gonzalez(vector<Point<d, Metric>>& pts,
         rev_nn[&p] = &pts[0];
     
     // in each iteration
-    for(auto it = pts.begin(); it != pts.end(); it++){
+    for(auto it = pts.begin()+1; it != pts.end(); it++){
         // a. find the farthest point from its rev_nn
         double max_dist = 0;
         Pt *farthest = &(*it), *predec = &(*it);

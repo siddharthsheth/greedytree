@@ -12,7 +12,7 @@
 #define Cell_H
 
 // Uncomment to enable debug logging
-#define DEBUG
+// #define DEBUG
 
 /**
  * @brief Macro for debug logging. Prints to std::cout if DEBUG is defined, otherwise does nothing.

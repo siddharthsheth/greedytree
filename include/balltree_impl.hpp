@@ -8,13 +8,12 @@ bool BallTree<d, Metric>::isleaf(){
 }
 
 template<size_t d, typename Metric>
-double BallTree<d, Metric>::dist(const PtPtr p){
+double BallTree<d, Metric>::dist(PtPtr p){
     return center->dist(*p);
 }
 
 template<size_t d, typename Metric>
 BallHeap<d, Metric> BallTree<d, Metric>::heap(){
-    // Define the heap type with decltype
     BallHeap ball_heap;
 
     ball_heap.push(this);
@@ -24,8 +23,11 @@ BallHeap<d, Metric> BallTree<d, Metric>::heap(){
 
 template<size_t d, typename Metric>
 BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts){
+    // Construct the tree topology
     auto root = _construct_tree(pts);
+    // Compute radii for each node
     _compute_radii(root.get());
+
     return std::move(root);
 }
 
@@ -56,6 +58,8 @@ BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
     return std::move(root);
 }
 
+// This method computes 2-approximate radii in linear time.
+// Computing exact radius requires finding the point farthest from the center for each node.
 template <size_t d, typename Metric>
 void _compute_radii(BallTree<d, Metric>* root) {
     using BallTreePtr = BallTree<d, Metric>*;

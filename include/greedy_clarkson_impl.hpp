@@ -1,9 +1,24 @@
 template <std::size_t d, typename Metric>
+
 void clarkson(vector<Point<d, Metric>>& pts,
                 vector<const Point<d, Metric>*>& gp,
                 vector<const Point<d, Metric>*>& pred
             ){
     using CellT = Cell<d, Metric>;
+
+    if (pts.empty()) {
+        gp.clear();
+        pred.clear();
+        return;
+    }
+
+    if (pts.size() == 1) {
+        gp.clear();
+        pred.clear();
+        gp.push_back(&pts[0]);
+        pred.push_back(&pts[0]);
+        return;
+    }
     
     NeighborGraph<d, Metric> G(pts);
     CellT* root_cell = G.heap_top();
@@ -24,4 +39,9 @@ void clarkson(vector<Point<d, Metric>>& pts,
         G.add_cell();
     }
     debug_log("Number of cells created: " << CellT::next_id);
+
+    // Assert that all output vectors have the same length as input
+#include <cassert>
+    assert(pts.size() == gp.size() && "Input points and centers must have the same length");
+    assert(pts.size() == pred.size() && "Input points and predecessors must have the same length");
 }

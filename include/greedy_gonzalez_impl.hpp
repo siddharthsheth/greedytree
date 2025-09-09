@@ -8,6 +8,21 @@ void gonzalez(vector<Point<d, Metric>>& pts,
                 vector<const Point<d, Metric>*>& gp,
                 vector<const Point<d, Metric>*>& pred
             ){
+
+    if (pts.empty()) {
+        gp.clear();
+        pred.clear();
+        return;
+    }
+
+    if (pts.size() == 1) {
+        gp.clear();
+        pred.clear();
+        gp.push_back(&pts[0]);
+        pred.push_back(&pts[0]);
+        return;
+    }
+
     using Pt = Point<d, Metric>;
     unordered_map<Pt*, Pt*> rev_nn;
     
@@ -41,4 +56,9 @@ void gonzalez(vector<Point<d, Metric>>& pts,
         gp.push_back(farthest);
         pred.push_back(predec);
     }
+
+    // Assert that all output vectors have the same length as input
+#include <cassert>
+    assert(pts.size() == gp.size() && "Input points and centers must have the same length");
+    assert(pts.size() == pred.size() && "Input points and predecessors must have the same length");
 }

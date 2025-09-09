@@ -1,12 +1,46 @@
 #include <gtest/gtest.h>
+#include "../include/greedy.hpp"
 #include <vector>
 #include <cmath>
-#include "../include/greedy.hpp"
+#include <limits>
 
 
-TEST(GreedyTest, SimpleGreedy){
+TEST(GreedyClarksonTest, Trivial) {
     using MyPoint = Point<1, L1Metric>;
-    
+
+    // Empty input
+    std::vector<MyPoint> empty_pts;
+    std::vector<const MyPoint*> gp, pred;
+    EXPECT_NO_THROW(clarkson(empty_pts, gp, pred));
+    EXPECT_TRUE(gp.empty());
+    EXPECT_TRUE(pred.empty());
+
+    // Single point
+    std::vector<MyPoint> single_pt{MyPoint{42.0}};
+    gp.clear(); pred.clear();
+    clarkson(single_pt, gp, pred);
+    ASSERT_EQ(gp.size(), 1);
+    ASSERT_EQ(pred.size(), 1);
+    EXPECT_EQ(gp[0], &single_pt[0]);
+    EXPECT_EQ(pred[0], &single_pt[0]);
+
+    // Two points
+    std::vector<MyPoint> two_pts{MyPoint{-1.0}, MyPoint{3.0}};
+    gp.clear(); pred.clear();
+    clarkson(two_pts, gp, pred);
+    ASSERT_EQ(gp.size(), 2);
+    std::vector<double> found_coords{gp[0]->coords[0], gp[1]->coords[0]};
+    std::vector<double> expected_coords{-1.0, 3.0};
+    std::sort(found_coords.begin(), found_coords.end());
+    std::sort(expected_coords.begin(), expected_coords.end());
+    EXPECT_EQ(found_coords, expected_coords);
+}
+
+
+
+TEST(GreedyClarksonTest, SimpleGreedy){
+    using MyPoint = Point<1, L1Metric>;
+    // Points: 0, 1, 2,    Expected gp: 0, 2, 1
     std::vector<MyPoint> pts;
     for(int i = 0; i < 3; i++)
         pts.push_back(MyPoint{double(i)});
@@ -15,13 +49,12 @@ TEST(GreedyTest, SimpleGreedy){
     };
     
     clarkson(pts, gp, pred);
-    
     EXPECT_EQ(gp, exp_gp);
 }
 
-TEST(GreedyTest, ExponentialGreedy){
+TEST(GreedyClarksonTest, ExponentialGreedy){
     using MyPoint = Point<1, L1Metric>;
-    
+    // Points: 1, -3, 9, -27, ...,    Expected gp: 1, -3^99, -3^98, ..., -3
     std::vector<MyPoint> pts;
     for(int i = 0; i < 100; i++)
         pts.push_back(MyPoint{std::pow(-3, i)});
@@ -30,13 +63,12 @@ TEST(GreedyTest, ExponentialGreedy){
         exp_gp.push_back(&pts[i]);
     
     clarkson(pts, gp, pred);
-    
     EXPECT_EQ(gp, exp_gp);
 }
 
-TEST(GreedyTest, Random){
+TEST(GreedyClarksonTest, Random){
     using MyPoint = Point<1, L1Metric>;
-    
+    // Points: 0, 8, 12, 100, 40, 70, 1, 72
     std::vector<double> coords{0, 8, 12, 100, 40, 70, 1, 72}, gp_coords;
     std::vector<MyPoint> pts;
     for(auto& p: coords)
@@ -44,15 +76,13 @@ TEST(GreedyTest, Random){
     std::vector<const MyPoint*> gp, pred, exp_gp;
     
     clarkson(pts, gp, pred);
-
     for(auto& p: gp)
         gp_coords.push_back(p->coords[0]);
     std::vector<double> exp_coords{0, 100, 40, 70, 12, 8, 72, 1};
-
     EXPECT_EQ(gp_coords, exp_coords);
 }
 
-TEST(GreedyTest, PlanarPointsGP){
+TEST(GreedyClarksonTest, PlanarPointsGP){
     using PlanarPoint = Point<2, L1Metric>;
     
     vector<PlanarPoint> pts;
@@ -71,11 +101,10 @@ TEST(GreedyTest, PlanarPointsGP){
     exp_gp.push_back(&pts[1]);      // 1, 2
 
     clarkson(pts, gp, pred);
-
     EXPECT_EQ(gp, exp_gp);
 }
 
-TEST(GreedyTest, PlanarPointsPred){
+TEST(GreedyClarksonTest, PlanarPointsPred){
     using PlanarPoint = Point<2, L1Metric>;
     
     vector<PlanarPoint> pts;
@@ -94,11 +123,10 @@ TEST(GreedyTest, PlanarPointsPred){
     exp_pred.push_back(&pts[0]);
 
     clarkson(pts, gp, pred);
-
     EXPECT_EQ(pred, exp_pred);
 }
 
-TEST(GreedyTest, SpatialPointsGP){
+TEST(GreedyClarksonTest, SpatialPointsGP){
     using SpatialPoint = Point<3, L2Metric>;
 
     vector<SpatialPoint> pts;
@@ -117,11 +145,10 @@ TEST(GreedyTest, SpatialPointsGP){
     exp_gp.push_back(&pts[2]);      // 1, 3, 3
 
     clarkson(pts, gp, pred);
-
     EXPECT_EQ(gp, exp_gp);
 }
 
-TEST(GreedyTest, SpatialPointsPred){
+TEST(GreedyClarksonTest, SpatialPointsPred){
     using SpatialPoint = Point<3, L2Metric>;
     
     vector<SpatialPoint> pts;
@@ -140,6 +167,5 @@ TEST(GreedyTest, SpatialPointsPred){
     exp_pred.push_back(&pts[0]);
 
     clarkson(pts, gp, pred);
-
     EXPECT_EQ(pred, exp_pred);
 }

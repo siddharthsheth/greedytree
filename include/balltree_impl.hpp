@@ -86,3 +86,55 @@ void _compute_radii(BallTree<d, Metric>* root) {
         }
     }
 }
+
+template <size_t d, typename Metric>
+const Point<d, Metric>* BallTree<d, Metric>::nearest(PtPtr query){
+    auto viable = heap();
+    const Point<d, Metric>* nearest = nullptr;
+    double nn_dist = std::numeric_limits<double>::max();
+    
+    auto is_viable = [&](BallTree<d, Metric>* node){
+        return node->dist(query) - node->radius < nn_dist;
+    };
+    
+    while(!viable.empty()){
+        auto top = viable.top();
+        double top_dist = top->dist(query);
+        if(top_dist < nn_dist){
+            nearest = top->center;
+            nn_dist = top_dist;
+        }
+        viable.pop();
+        if(top->left && is_viable((top->left).get()))
+            viable.push((top->left).get());
+        if(top->right && is_viable((top->right).get()))
+            viable.push((top->right).get());
+    }
+    return nearest;
+}
+
+template <size_t d, typename Metric>
+const Point<d, Metric>* BallTree<d, Metric>::farthest(PtPtr query){
+    auto viable = heap();
+    const Point<d, Metric>* farthest = nullptr;
+    double fn_dist = 0.0;
+    
+    auto is_viable = [&](BallTree<d, Metric>* node){
+        return node->dist(query) + node->radius > fn_dist;
+    };
+    
+    while(!viable.empty()){
+        auto top = viable.top();
+        double top_dist = top->dist(query);
+        if(top_dist > fn_dist){
+            farthest = top->center;
+            fn_dist = top_dist;
+        }
+        viable.pop();
+        if(top->left && is_viable((top->left).get()))
+            viable.push((top->left).get());
+        if(top->right && is_viable((top->right).get()))
+            viable.push((top->right).get());
+    }
+    return farthest;
+}

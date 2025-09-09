@@ -99,6 +99,9 @@ public:
      * @return BallHeap containing nodes ordered by radius.
      */
     BallHeap heap();
+
+    PtPtr nearest(PtPtr query);
+    PtPtr farthest(PtPtr query);
 };
 
 /**

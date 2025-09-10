@@ -34,8 +34,7 @@ enable_testing()
 # --- Add test executable ---
 add_executable(greedy_tests
     tests/test_balltree.cpp
-    tests/test_greedy_clarkson.cpp  # replace or add other test files as needed
-    tests/test_greedy_gonzalez.cpp
+    tests/test_greedy.cpp
     src/debug_log.cpp
 )
 

@@ -24,15 +24,15 @@ struct ClarksonAlgo {
 
 // Test fixture template
 template <typename Algo>
-class GreedyParamTest : public ::testing::Test {
+class GreedyTest : public ::testing::Test {
 public:
     using MyPoint = Point<1, L1Metric>;
     Algo algo;
 };
 
-TYPED_TEST_SUITE_P(GreedyParamTest);
+TYPED_TEST_SUITE_P(GreedyTest);
 
-TYPED_TEST_P(GreedyParamTest, Trivial) {
+TYPED_TEST_P(GreedyTest, Empty) {
     using MyPoint = typename TestFixture::MyPoint;
     TypeParam algo;
     std::vector<MyPoint> empty_pts;
@@ -40,13 +40,23 @@ TYPED_TEST_P(GreedyParamTest, Trivial) {
     EXPECT_NO_THROW(algo(empty_pts, gp, pred));
     EXPECT_TRUE(gp.empty());
     EXPECT_TRUE(pred.empty());
+}
+
+TYPED_TEST_P(GreedyTest, SinglePoint) {
+    using MyPoint = typename TestFixture::MyPoint;
+    TypeParam algo;
+    std::vector<const MyPoint*> gp, pred;
     std::vector<MyPoint> single_pt{MyPoint{42.0}};
-    gp.clear(); pred.clear();
     algo(single_pt, gp, pred);
     ASSERT_EQ(gp.size(), 1);
     EXPECT_EQ(gp[0], &single_pt[0]);
+}
+
+TYPED_TEST_P(GreedyTest, TwoPoints) {
+    using MyPoint = typename TestFixture::MyPoint;
+    TypeParam algo;
+    std::vector<const MyPoint*> gp, pred;
     std::vector<MyPoint> two_pts{MyPoint{-1.0}, MyPoint{3.0}};
-    gp.clear(); pred.clear();
     algo(two_pts, gp, pred);
     ASSERT_EQ(gp.size(), 2);
     std::vector<double> found_coords{gp[0]->coords[0], gp[1]->coords[0]};
@@ -54,7 +64,7 @@ TYPED_TEST_P(GreedyParamTest, Trivial) {
     EXPECT_EQ(found_coords, exp_coords);
 }
 
-TYPED_TEST_P(GreedyParamTest, SimpleGreedy) {
+TYPED_TEST_P(GreedyTest, SimpleGreedy) {
     using MyPoint = typename TestFixture::MyPoint;
     TypeParam algo;
     std::vector<MyPoint> pts;
@@ -67,7 +77,7 @@ TYPED_TEST_P(GreedyParamTest, SimpleGreedy) {
     EXPECT_EQ(gp, exp_gp);
 }
 
-TYPED_TEST_P(GreedyParamTest, ExponentialGreedy) {
+TYPED_TEST_P(GreedyTest, ExponentialGreedy) {
     using MyPoint = typename TestFixture::MyPoint;
     TypeParam algo;
     std::vector<MyPoint> pts;
@@ -80,7 +90,7 @@ TYPED_TEST_P(GreedyParamTest, ExponentialGreedy) {
     EXPECT_EQ(gp, exp_gp);
 }
 
-TYPED_TEST_P(GreedyParamTest, Random) {
+TYPED_TEST_P(GreedyTest, Random) {
     using MyPoint = typename TestFixture::MyPoint;
     TypeParam algo;
     std::vector<double> coords{0, 8, 12, 100, 40, 70, 1, 72}, gp_coords;
@@ -96,7 +106,7 @@ TYPED_TEST_P(GreedyParamTest, Random) {
     EXPECT_EQ(gp_coords, exp_coords);
 }
 
-TYPED_TEST_P(GreedyParamTest, PlanarPointsGP) {
+TYPED_TEST_P(GreedyTest, PlanarPointsGP) {
     using PlanarPoint = Point<2, L1Metric>;
     TypeParam algo;
     std::vector<PlanarPoint> pts;
@@ -118,7 +128,7 @@ TYPED_TEST_P(GreedyParamTest, PlanarPointsGP) {
     EXPECT_EQ(pred, exp_pred);
 }
 
-TYPED_TEST_P(GreedyParamTest, PlanarPointsPred) {
+TYPED_TEST_P(GreedyTest, PlanarPointsPred) {
     using PlanarPoint = Point<2, L1Metric>;
     TypeParam algo;
     vector<PlanarPoint> pts;
@@ -141,7 +151,7 @@ TYPED_TEST_P(GreedyParamTest, PlanarPointsPred) {
     EXPECT_EQ(pred, exp_pred);
 }
 
-TYPED_TEST_P(GreedyParamTest, SpatialPointsGP) {
+TYPED_TEST_P(GreedyTest, SpatialPointsGP) {
     using SpatialPoint = Point<3, L2Metric>;
     TypeParam algo;
 
@@ -165,7 +175,7 @@ TYPED_TEST_P(GreedyParamTest, SpatialPointsGP) {
     EXPECT_EQ(gp, exp_gp);
 }
 
-TYPED_TEST_P(GreedyParamTest, SpatialPointsPred) {
+TYPED_TEST_P(GreedyTest, SpatialPointsPred) {
     using SpatialPoint = Point<3, L2Metric>;
     TypeParam algo;
     vector<SpatialPoint> pts;
@@ -190,8 +200,10 @@ TYPED_TEST_P(GreedyParamTest, SpatialPointsPred) {
 
 // Register all test cases
 REGISTER_TYPED_TEST_SUITE_P(
-    GreedyParamTest,
-    Trivial,
+    GreedyTest,
+    Empty,
+    SinglePoint,
+    TwoPoints,
     SimpleGreedy,
     ExponentialGreedy,
     Random,
@@ -203,4 +215,4 @@ REGISTER_TYPED_TEST_SUITE_P(
 
 // Instantiate with your algorithms
 typedef ::testing::Types<GonzalezAlgo, ClarksonAlgo> GreedyAlgos;
-INSTANTIATE_TYPED_TEST_SUITE_P(AllGreedyAlgos, GreedyParamTest, GreedyAlgos);
+INSTANTIATE_TYPED_TEST_SUITE_P(AllGreedyAlgos, GreedyTest, GreedyAlgos);

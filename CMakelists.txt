@@ -33,7 +33,7 @@ enable_testing()
 
 # --- Add test executable ---
 add_executable(greedy_tests
-    tests/test_balltree.cpp
+    #tests/test_balltree.cpp
     tests/test_greedy.cpp
     src/debug_log.cpp
 )

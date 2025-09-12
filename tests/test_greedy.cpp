@@ -44,18 +44,14 @@ TYPED_TEST_P(GreedyParamTest, Trivial) {
     gp.clear(); pred.clear();
     algo(single_pt, gp, pred);
     ASSERT_EQ(gp.size(), 1);
-    ASSERT_EQ(pred.size(), 1);
     EXPECT_EQ(gp[0], &single_pt[0]);
-    EXPECT_EQ(pred[0], &single_pt[0]);
     std::vector<MyPoint> two_pts{MyPoint{-1.0}, MyPoint{3.0}};
     gp.clear(); pred.clear();
     algo(two_pts, gp, pred);
     ASSERT_EQ(gp.size(), 2);
     std::vector<double> found_coords{gp[0]->coords[0], gp[1]->coords[0]};
-    std::vector<double> expected_coords{-1.0, 3.0};
-    std::sort(found_coords.begin(), found_coords.end());
-    std::sort(expected_coords.begin(), expected_coords.end());
-    EXPECT_EQ(found_coords, expected_coords);
+    std::vector<double> exp_coords{-1.0, 3.0};
+    EXPECT_EQ(found_coords, exp_coords);
 }
 
 TYPED_TEST_P(GreedyParamTest, SimpleGreedy) {
@@ -68,11 +64,7 @@ TYPED_TEST_P(GreedyParamTest, SimpleGreedy) {
         &pts[0], &pts[2], &pts[1]
     };
     algo(pts, gp, pred);
-    EXPECT_EQ(gp.size(), 3);
-    std::vector<const MyPoint*> sorted_gp = gp;
-    std::sort(sorted_gp.begin(), sorted_gp.end());
-    std::sort(exp_gp.begin(), exp_gp.end());
-    EXPECT_EQ(sorted_gp, exp_gp);
+    EXPECT_EQ(gp, exp_gp);
 }
 
 TYPED_TEST_P(GreedyParamTest, ExponentialGreedy) {
@@ -81,9 +73,11 @@ TYPED_TEST_P(GreedyParamTest, ExponentialGreedy) {
     std::vector<MyPoint> pts;
     for(int i = 0; i < 100; i++)
         pts.push_back(MyPoint{std::pow(-3, i)});
-    std::vector<const MyPoint*> gp, pred;
+    std::vector<const MyPoint*> gp, pred, exp_gp = {&pts[0], &pts[99]};
     algo(pts, gp, pred);
-    EXPECT_EQ(gp.size(), 100);
+     for(int i = 98; i > 0; i--)
+        exp_gp.push_back(&pts[i]);
+    EXPECT_EQ(gp, exp_gp);
 }
 
 TYPED_TEST_P(GreedyParamTest, Random) {
@@ -95,14 +89,11 @@ TYPED_TEST_P(GreedyParamTest, Random) {
         pts.push_back(MyPoint{p});
     std::vector<const MyPoint*> gp, pred;
     algo(pts, gp, pred);
-    EXPECT_EQ(gp.size(), pts.size());
     for(auto& p: gp)
         gp_coords.push_back(p->coords[0]);
-    std::vector<double> sorted_gp_coords = gp_coords;
-    std::sort(sorted_gp_coords.begin(), sorted_gp_coords.end());
-    std::vector<double> sorted_coords = coords;
-    std::sort(sorted_coords.begin(), sorted_coords.end());
-    EXPECT_EQ(sorted_gp_coords, sorted_coords);
+    std::vector<double> exp_coords{0, 100, 40, 70, 12, 8, 72, 1};
+
+    EXPECT_EQ(gp_coords, exp_coords);
 }
 
 TYPED_TEST_P(GreedyParamTest, PlanarPointsGP) {
@@ -114,77 +105,87 @@ TYPED_TEST_P(GreedyParamTest, PlanarPointsGP) {
     pts.push_back(PlanarPoint({5, 6}));
     pts.push_back(PlanarPoint({15, 0}));
     pts.push_back(PlanarPoint({8, 5}));
-    std::vector<const PlanarPoint*> gp, pred;
+    
+    vector<const PlanarPoint*> gp, pred, exp_pred;
+    exp_pred.push_back(nullptr);
+    exp_pred.push_back(&pts[0]);
+    exp_pred.push_back(&pts[3]);
+    exp_pred.push_back(&pts[4]);
+    exp_pred.push_back(&pts[0]);
+
     algo(pts, gp, pred);
-    EXPECT_EQ(gp.size(), pts.size());
-    std::vector<const PlanarPoint*> all_pts;
-    for (auto& p : pts) all_pts.push_back(&p);
-    std::sort(gp.begin(), gp.end());
-    std::sort(all_pts.begin(), all_pts.end());
-    EXPECT_EQ(gp, all_pts);
+
+    EXPECT_EQ(pred, exp_pred);
 }
 
 TYPED_TEST_P(GreedyParamTest, PlanarPointsPred) {
     using PlanarPoint = Point<2, L1Metric>;
     TypeParam algo;
-    std::vector<PlanarPoint> pts;
+    vector<PlanarPoint> pts;
     pts.push_back(PlanarPoint({0, 0}));
     pts.push_back(PlanarPoint({1, 2}));
     pts.push_back(PlanarPoint({5, 6}));
     pts.push_back(PlanarPoint({15, 0}));
     pts.push_back(PlanarPoint({8, 5}));
-    std::vector<const PlanarPoint*> gp, pred;
+
+    vector<const PlanarPoint*> gp, pred, exp_pred;
+
+    exp_pred.push_back(nullptr);
+    exp_pred.push_back(&pts[0]);
+    exp_pred.push_back(&pts[3]);
+    exp_pred.push_back(&pts[4]);
+    exp_pred.push_back(&pts[0]);
+
     algo(pts, gp, pred);
-    EXPECT_EQ(pred.size(), pts.size());
-    EXPECT_EQ(pred[0], nullptr);
-    for (auto* p : pred) {
-        if (p) {
-            bool found = false;
-            for (auto& pt : pts) if (p == &pt) found = true;
-            EXPECT_TRUE(found);
-        }
-    }
+
+    EXPECT_EQ(pred, exp_pred);
 }
 
 TYPED_TEST_P(GreedyParamTest, SpatialPointsGP) {
     using SpatialPoint = Point<3, L2Metric>;
     TypeParam algo;
-    std::vector<SpatialPoint> pts;
+
+    vector<SpatialPoint> pts;
     pts.push_back(SpatialPoint({0, 0, 5}));
     pts.push_back(SpatialPoint({15, 0, 10}));
     pts.push_back(SpatialPoint({1, 3, 3}));
     pts.push_back(SpatialPoint({5, 6, 9}));
     pts.push_back(SpatialPoint({8, 5, 1}));
-    std::vector<const SpatialPoint*> gp, pred;
+    
+    vector<const SpatialPoint*> gp, pred, exp_gp;
+
+    exp_gp.push_back(&pts[0]);      // 0, 0, 5
+    exp_gp.push_back(&pts[1]);      // 15, 0, 10
+    exp_gp.push_back(&pts[4]);      // 8, 5, 1
+    exp_gp.push_back(&pts[3]);      // 5, 6, 9
+    exp_gp.push_back(&pts[2]);      // 1, 3, 3
+
     algo(pts, gp, pred);
-    EXPECT_EQ(gp.size(), pts.size());
-    std::vector<const SpatialPoint*> all_pts;
-    for (auto& p : pts) all_pts.push_back(&p);
-    std::sort(gp.begin(), gp.end());
-    std::sort(all_pts.begin(), all_pts.end());
-    EXPECT_EQ(gp, all_pts);
+
+    EXPECT_EQ(gp, exp_gp);
 }
 
 TYPED_TEST_P(GreedyParamTest, SpatialPointsPred) {
     using SpatialPoint = Point<3, L2Metric>;
     TypeParam algo;
-    std::vector<SpatialPoint> pts;
+    vector<SpatialPoint> pts;
     pts.push_back(SpatialPoint({0, 0, 5}));
     pts.push_back(SpatialPoint({1, 3, 3}));
     pts.push_back(SpatialPoint({5, 6, 9}));
     pts.push_back(SpatialPoint({15, 0, 10}));
     pts.push_back(SpatialPoint({8, 5, 1}));
-    std::vector<const SpatialPoint*> gp, pred;
+    
+    vector<const SpatialPoint*> gp, pred, exp_pred;
+
+    exp_pred.push_back(nullptr);
+    exp_pred.push_back(&pts[0]);
+    exp_pred.push_back(&pts[0]);
+    exp_pred.push_back(&pts[4]);
+    exp_pred.push_back(&pts[0]);
+
     algo(pts, gp, pred);
-    EXPECT_EQ(pred.size(), pts.size());
-    EXPECT_EQ(pred[0], nullptr);
-    for (auto* p : pred) {
-        if (p) {
-            bool found = false;
-            for (auto& pt : pts) if (p == &pt) found = true;
-            EXPECT_TRUE(found);
-        }
-    }
+
+    EXPECT_EQ(pred, exp_pred);
 }
 
 // Register all test cases

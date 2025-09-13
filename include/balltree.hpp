@@ -102,6 +102,7 @@ public:
 
     PtPtr nearest(PtPtr query);
     PtPtr farthest(PtPtr query);
+    vector<BallTree*> range(PtPtr query, double q_radius);
 };
 
 /**

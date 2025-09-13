@@ -142,3 +142,33 @@ const Point<d, Metric>* BallTree<d, Metric>::farthest(PtPtr query){
     }
     return farthest;
 }
+
+template <size_t d, typename Metric>
+vector<BallTree<d, Metric>*> BallTree<d, Metric>::range(PtPtr query, double q_radius){
+    using BallTreePtr = BallTree<d, Metric>*;
+
+    auto viable = heap();
+    vector<BallTreePtr> output;
+    
+    auto is_viable = [&](BallTreePtr node){
+        return node->dist(query) - node->radius <= q_radius;
+    };
+    
+    while(!viable.empty()){
+        auto top = viable.top();
+        double top_dist = top->dist(query);
+        viable.pop();
+        
+        if(top_dist + top->radius <= q_radius){
+            output.push_back(top);
+            continue;
+        }
+        
+        if(top->left && is_viable((top->left).get()))
+            viable.push((top->left).get());
+        
+        if(top->right && is_viable((top->right).get()))
+            viable.push((top->right).get());
+    }
+    return output;
+}

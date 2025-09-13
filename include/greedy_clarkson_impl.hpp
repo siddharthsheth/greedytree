@@ -9,16 +9,9 @@ void clarkson(vector<Point<d, Metric>>& pts,
     gp.clear();
     pred.clear();
 
-    if (pts.empty()) {
+    if (pts.empty())
         return;
-    }
 
-    if (pts.size() == 1) {
-        gp.push_back(&pts[0]);
-        pred.push_back(nullptr);
-        return;
-    }
-    
     NeighborGraph<d, Metric> G(pts);
     CellT* root_cell = G.heap_top();
     

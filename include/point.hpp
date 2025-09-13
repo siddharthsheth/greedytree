@@ -19,6 +19,31 @@
 #include <cstddef>     // std::size_t
 #include "metrics.hpp"
 
+// Include fstream for file output
+#include <fstream>
+
+// Uncomment to enable debug logging
+// #define DEBUG
+#define DISPLAY
+
+#ifdef DEBUG
+// Open a global debug stream (append mode so logs persist)
+static std::ofstream debug_stream("debug.log", std::ios::app);
+
+#define debug_log(x) debug_stream << x << std::endl
+#else
+#define debug_log(x) do {} while (0)
+#endif
+
+/**
+ * @brief Macro for debug logging. Prints to std::cout if DISPLAY is defined, otherwise does nothing.
+ */
+#ifdef DISPLAY
+#  define display_log(x) cout << x << std::endl
+#else
+#  define display_log(x) do {} while (0)
+#endif
+
 // Forward declaration for friend operator<<
 template <std::size_t d, typename Metric>
 std::ostream& operator<<(std::ostream& os, const Point<d, Metric>& p);

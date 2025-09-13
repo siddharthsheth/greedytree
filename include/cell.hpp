@@ -11,21 +11,6 @@
 #ifndef Cell_H
 #define Cell_H
 
-// Include fstream for file output
-#include <fstream>
-extern std::ofstream debug_log_file;
-
-// Uncomment to enable debug logging
-// #define DEBUG
-
-/**
- * @brief Macro for debug logging. Prints to std::cout if DEBUG is defined, otherwise does nothing.
- */
-#ifdef DEBUG
-#  define debug_log(x) debug_log_file << x << std::endl
-#else
-#  define debug_log(x) do {} while (0)
-#endif
 
 #include "point.hpp"
 #include <vector>

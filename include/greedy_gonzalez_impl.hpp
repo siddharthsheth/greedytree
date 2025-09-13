@@ -8,6 +8,20 @@ void gonzalez(vector<Point<d, Metric>>& pts,
                 vector<const Point<d, Metric>*>& gp,
                 vector<const Point<d, Metric>*>& pred
             ){
+
+    gp.clear();
+    pred.clear();
+
+    if (pts.empty()) {
+        return;
+    }
+
+    if (pts.size() == 1) {
+        gp.push_back(&pts[0]);
+        pred.push_back(nullptr);
+        return;
+    }
+
     using Pt = Point<d, Metric>;
     unordered_map<Pt*, Pt*> rev_nn;
     

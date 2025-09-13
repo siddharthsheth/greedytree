@@ -1,9 +1,23 @@
 template <std::size_t d, typename Metric>
+
 void clarkson(vector<Point<d, Metric>>& pts,
                 vector<const Point<d, Metric>*>& gp,
                 vector<const Point<d, Metric>*>& pred
             ){
     using CellT = Cell<d, Metric>;
+    
+    gp.clear();
+    pred.clear();
+
+    if (pts.empty()) {
+        return;
+    }
+
+    if (pts.size() == 1) {
+        gp.push_back(&pts[0]);
+        pred.push_back(nullptr);
+        return;
+    }
     
     NeighborGraph<d, Metric> G(pts);
     CellT* root_cell = G.heap_top();

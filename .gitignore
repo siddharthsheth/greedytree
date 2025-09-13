@@ -38,4 +38,5 @@
 *.app
 
 # debug information files
+src/debug_log.cpp
 *.dwo

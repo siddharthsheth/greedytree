@@ -16,7 +16,7 @@ Cell<d,Metric>::Cell(Pt& p) :
                     center(&p),
                     radius(0),
                     farthest(&p) {
-    points.push_back(&p);
+    // points.push_back(&p);
     debug_log("Created cell with center " << *center);
 }
 
@@ -26,7 +26,7 @@ Cell<d,Metric>::Cell(PtPtr p) :
                         center(p),
                         radius(0),
                         farthest(p) {
-    points.push_back(p);
+    // points.push_back(p);
     debug_log("Created cell with pointer center " << *center);
 }
 
@@ -38,7 +38,7 @@ void Cell<d,Metric>::add_point(PtPtr p) {
         radius = dist_p;
         farthest = p;
     }
-    debug_log("New farthest point: " << *farthest << " at distance " << dist(*farthest));
+    // debug_log("New farthest point: " << *farthest << " at distance " << dist(*farthest));
 }
 
 template <size_t d, typename Metric>

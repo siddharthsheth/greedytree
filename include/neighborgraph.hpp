@@ -49,6 +49,9 @@ public:
         boost::vecS, boost::vecS, boost::undirectedS,
         CellPtr
     >;
+
+    using adj_iter = typename boost::graph_traits<Graph>::adjacency_iterator;
+
     /**
      * @brief Vertex descriptor type for the graph.
      */
@@ -74,18 +77,24 @@ private:
      * @brief Add a cell as a vertex in the graph.
      * @param c Pointer to the cell to add.
      */
-    void add_vertex(CellPtr c);                 // Make lambda
+    inline void add_vertex(CellPtr c) {
+        vertex[c] = boost::add_vertex(c, g);
+    }
+
     /**
      * @brief Add an edge between two cells in the graph.
      * @param a Pointer to first cell.
      * @param b Pointer to second cell.
      */
-    void add_edge(CellPtr a, CellPtr b);        // Make lambda
-    /**
-     * @brief Update a vertex in the graph.
-     * @param c Pointer to the cell to update.
-     */
-    void update_vertex(CellPtr c);              // Can be deleted
+    inline void add_edge(CellPtr a, CellPtr b){
+        if(!(boost::edge(vertex[a], vertex[b], g).second))
+            boost::add_edge(vertex[a], vertex[b], g);
+    }
+
+    
+    std::pair<adj_iter, adj_iter> nbrs(CellPtr c) {
+        return boost::adjacent_vertices(vertex[c], g);
+    }
 
     std::vector<PtLoc> rev_nn;
     PtPtr root_pt;
@@ -125,7 +134,7 @@ public:
      * @brief Construct a NeighborGraph from a vector of points.
      * @param P Vector of points to initialize the graph.
      */
-    NeighborGraph(vector<Pt>& P);
+    NeighborGraph(vector<Pt>& pts);
     /**
      * @brief Add a new cell to the graph.
      */
@@ -153,9 +162,13 @@ public:
      * @param b Pointer to second cell.
      * @return True if close enough, false otherwise.
      */
-    bool is_close_enough(const CellPtr a, const CellPtr b) const;   // Make lambda
+    inline bool is_close_enough(const CellPtr a, const CellPtr b) const{
+        return a->dist(*b) <= a->radius +
+                                b->radius +
+                                max(a->radius, b->radius);
+    }
 
-    void swap_cells(size_t i, size_t j);                              // Make lambda
+    void swap_cells(size_t i, size_t j);
 };
 
 /**

@@ -27,11 +27,13 @@ struct L2Metric {
      * @return The L2 norm of the point.
      */
     template <std::size_t d>
-    static double norm(const Point<d, L2Metric>& p) {
+    static double compare_dist(const Point<d, L2Metric>& a, const Point<d, L2Metric>& b) {
         double sum = 0.0;
-        for (std::size_t i = 0; i < d; ++i)
-            sum += p[i] * p[i];
-        return std::sqrt(sum);
+        for (std::size_t i = 0; i < d; ++i) {
+            double diff = a[i] - b[i];
+            sum += diff * diff;
+        }
+        return sum;
     }
 
     /**
@@ -65,10 +67,10 @@ struct L1Metric {
      * @return The L1 norm of the point.
      */
     template <std::size_t d>
-    static double norm(const Point<d, L1Metric>& p) {
+    static double compare_dist(const Point<d, L1Metric>& a, const Point<d, L1Metric>& b) {
         double sum = 0.0;
         for (std::size_t i = 0; i < d; ++i)
-            sum += std::abs(p[i]);
+            sum += std::abs(a[i] - b[i]);
         return sum;
     }
 

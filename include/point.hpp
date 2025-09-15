@@ -100,35 +100,13 @@ public:
     bool operator<(const Point& other) const;
 
     /**
-     * @brief Add two points coordinate-wise.
-     * @param other Point to add.
-     * @return Sum of points.
-     */
-    Point operator+(const Point& other) const;
-    /**
-     * @brief Subtract two points coordinate-wise.
-     * @param other Point to subtract.
-     * @return Difference of points.
-     */
-    Point operator-(const Point& other) const;
-    /**
-     * @brief Multiply point by a scalar.
-     * @param scalar Scalar value.
-     * @return Scaled point.
-     */
-    Point operator*(double scalar) const;
-
-    /**
-     * @brief Compute the norm of the point (delegated to Metric).
-     * @return Norm of the point.
-     */
-    double norm() const;
-    /**
      * @brief Compute the distance to another point (delegated to Metric).
      * @param other Point to measure distance to.
      * @return Distance between points.
      */
     double dist(const Point& other) const;
+
+    double compare_dist(const Point& other) const;
     
     /**
      * @brief Output operator for printing points.

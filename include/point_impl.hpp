@@ -38,43 +38,16 @@ bool Point<d,Metric>::operator<(const Point& other) const{
     return true;
 }
 
-// Addition
-template <std::size_t d, typename Metric>
-Point<d,Metric> Point<d,Metric>::operator+(const Point& other) const {
-    Point result;
-    for (std::size_t i = 0; i < d; ++i)
-        result[i] = coords[i] + other[i];
-    return result;
-}
-
-// Subtraction
-template <std::size_t d, typename Metric>
-Point<d,Metric> Point<d,Metric>::operator-(const Point& other) const {
-    Point result;
-    for (std::size_t i = 0; i < d; ++i)
-        result[i] = coords[i] - other[i];
-    return result;
-}
-
-// Scalar multiplication
-template <std::size_t d, typename Metric>
-Point<d,Metric> Point<d,Metric>::operator*(double scalar) const {
-    Point result;
-    for (std::size_t i = 0; i < d; ++i)
-        result[i] = coords[i] * scalar;
-    return result;
-}
-
-// Norm (delegated to metric)
-template <std::size_t d, typename Metric>
-double Point<d,Metric>::norm() const {
-    return Metric::template norm<d>(*this);
-}
-
 // Distance (delegated to metric)
 template <std::size_t d, typename Metric>
 double Point<d,Metric>::dist(const Point& other) const {
     return Metric::template dist<d>(*this, other);
+}
+
+// Compare Distance (delegated to metric)
+template <std::size_t d, typename Metric>
+double Point<d,Metric>::compare_dist(const Point& other) const {
+    return Metric::template compare_dist<d>(*this, other);
 }
 
 // Helper function to combine hashes (from Boost)

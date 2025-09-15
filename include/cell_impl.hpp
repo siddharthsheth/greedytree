@@ -42,7 +42,7 @@ void Cell<d,Metric>::add_point(PtPtr p) {
 }
 
 template <size_t d, typename Metric>
-double Cell<d,Metric>::dist(const Pt& p) const {
+double Cell<d,Metric>::dist(Pt& p) const {
     return (*center).dist(p);
 }
 

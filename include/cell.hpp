@@ -30,11 +30,11 @@ public:
     /**
      * @brief Alias for a constant Point in d dimensions with the given Metric.
      */
-    using Pt = const Point<d, Metric>;
+    using Pt = Point<d, Metric>;
     /**
      * @brief Alias for a pointer to a constant Point.
      */
-    using PtPtr = const Point<d, Metric>*;
+    using PtPtr = Point<d, Metric>*;
     
     /**
      * @brief Static counter for assigning unique IDs to cells.

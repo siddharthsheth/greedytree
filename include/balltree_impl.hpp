@@ -37,22 +37,24 @@ BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
     using PtPtr = const Point<d, Metric>*;
     using BallTreePtr = BallTree<d, Metric>*;
     
-    vector<PtPtr> gp, pred;
-    clarkson(pts, gp, pred);
+    vector<PtPtr> pred;
+    clarkson(pts, pred);
     
-    auto root = std::make_unique<BallTree<d, Metric>>(gp[0]);
+    PtPtr root_pt = &pts[0];
+    auto root = std::make_unique<BallTree<d, Metric>>(root_pt);
     
     unordered_map<PtPtr, BallTreePtr> leaf;
-    leaf[gp[0]] = root.get();
+    leaf[&pts[0]] = root.get();
 
-    for(auto i = 1; i < gp.size(); i++){
+    for(auto i = 1; i < pts.size(); i++){
         auto node = leaf[pred[i]];
+        PtPtr right_pt = &pts[i];
         
         node->left = std::make_unique<BallTree<d, Metric>>(pred[i]);
-        node->right = std::make_unique<BallTree<d, Metric>>(gp[i]);
+        node->right = std::make_unique<BallTree<d, Metric>>(right_pt);
         
         leaf[pred[i]] = (node->left).get();
-        leaf[gp[i]] = (node->right).get();
+        leaf[right_pt] = (node->right).get();
     }
 
     return std::move(root);

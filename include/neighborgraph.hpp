@@ -56,8 +56,9 @@ public:
     /**
      * @brief Pair of unique_ptr to Cell and a double (for heap operations).
      */
-    using HeapPair = pair<std::unique_ptr<Cell<d, Metric>>, double>;
+    using HeapPair = std::pair<std::unique_ptr<Cell<d, Metric>>, double>;
 
+    using PtLoc = std::pair<CellPtr, size_t>;
 private:
     /**
      * @brief The underlying graph.
@@ -73,19 +74,25 @@ private:
      * @brief Add a cell as a vertex in the graph.
      * @param c Pointer to the cell to add.
      */
-    void add_vertex(CellPtr c);
+    void add_vertex(CellPtr c);                 // Make lambda
     /**
      * @brief Add an edge between two cells in the graph.
      * @param a Pointer to first cell.
      * @param b Pointer to second cell.
      */
-    void add_edge(CellPtr a, CellPtr b);
+    void add_edge(CellPtr a, CellPtr b);        // Make lambda
     /**
      * @brief Update a vertex in the graph.
      * @param c Pointer to the cell to update.
      */
-    void update_vertex(CellPtr c);
+    void update_vertex(CellPtr c);              // Can be deleted
 
+    std::vector<PtLoc> rev_nn;
+    PtPtr root_pt;
+    
+    inline size_t pt_index(PtPtr p) const {
+        return static_cast<size_t>(p - root_pt);
+    }
     /**
      * @brief Comparator for heap operations on HeapPair.
      */
@@ -146,7 +153,9 @@ public:
      * @param b Pointer to second cell.
      * @return True if close enough, false otherwise.
      */
-    bool is_close_enough(const CellPtr a, const CellPtr b) const;
+    bool is_close_enough(const CellPtr a, const CellPtr b) const;   // Make lambda
+
+    void swap_cells(size_t i, size_t j);                              // Make lambda
 };
 
 /**

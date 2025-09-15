@@ -27,7 +27,6 @@
  */
 template <std::size_t d, typename Metric>
 void gonzalez(std::vector<Point<d, Metric>>& pts,
-              std::vector<const Point<d, Metric>*>& gp,
               std::vector<const Point<d, Metric>*>& pred);
 
 /**
@@ -43,7 +42,6 @@ void gonzalez(std::vector<Point<d, Metric>>& pts,
  */
 template <std::size_t d, typename Metric>
 void clarkson(std::vector<Point<d, Metric>>& pts,
-              std::vector<const Point<d, Metric>*>& gp,
               std::vector<const Point<d, Metric>*>& pred);
 
 #include "greedy_gonzalez_impl.hpp"

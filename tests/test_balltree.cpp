@@ -43,7 +43,7 @@ TEST(BallTreeTest, NearestNeighbor) {
     PlanarPoint query({15,7});
     const PlanarPoint* nn = tree->nearest(&query);
 
-    EXPECT_EQ(nn, &pts[3]);
+    EXPECT_EQ(*nn, PlanarPoint({15, 0}));
 }
 
 TEST(BallTreeTest, FarthestNeighbor) {

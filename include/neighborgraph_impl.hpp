@@ -1,10 +1,17 @@
 template <std::size_t d, typename Metric>
 NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& P){
+    root_pt = &P[0];
     auto root = std::make_unique<Cell<d, Metric>>(P[0]);
-    for(auto& p: P)
-        (*root).add_point(&p);
-    
     CellPtr rootptr = root.get();
+
+    rev_nn.reserve(P.size());
+    size_t i = 0;
+    for(auto& p: P){
+        (*root).add_point(&p);
+        rev_nn[i] = PtLoc({rootptr, i});
+        i++;
+    }
+    
     add_vertex(rootptr);
     add_edge(rootptr, rootptr);
     
@@ -71,17 +78,23 @@ void NeighborGraph<d, Metric>::add_cell(){
 
 template <std::size_t d, typename Metric>
 void NeighborGraph<d, Metric>::rebalance(CellPtr a, CellPtr b){
-    vector<const Point<d, Metric>*> to_move, to_stay;
+    vector<Point<d, Metric>*> to_move, to_stay;
     debug_log("PL from " << *(b->center) << " to " << *(a->center));
-    for(auto &p: b->points)
+    size_t i_a = a->size(), i_b = 0;
+    for(auto &p: b->points){
         if(a->dist(*p) < b->dist(*p)){
             to_move.push_back(p);
+            rev_nn[pt_index(p)] = PtLoc({a, i_a});
+            i_a++;
             debug_log("Point: " << *p << ", d(a,p)=" << a->dist(*p) << " and d(b,p)=" << b->dist(*p) << ". Moved");
         }
         else{
             to_stay.push_back(p);
+            rev_nn[pt_index(p)] = PtLoc({b, i_b});
+            i_b++;
             debug_log("Point: " << *p << ", d(a,p)=" << a->dist(*p) << " and d(b,p)=" << b->dist(*p) << ". Stayed");
         }
+    }
     
     b->points = std::move(to_stay);
     
@@ -171,4 +184,19 @@ CellPtr<d, Metric> NeighborGraph<d, Metric>::heap_top(){
         }
     }
     return nullptr;
+}
+
+template<size_t d, typename Metric>
+void NeighborGraph<d, Metric>::swap_cells(size_t i, size_t j){
+    auto [c_i, l_i] = rev_nn[i];
+    auto [c_j, l_j] = rev_nn[j];
+
+    // assert(c_i->points[l_i] == p);
+    // assert(c_j->points[l_j] == q);
+    if(c_i->farthest == c_i->points[l_i])
+        c_i->farthest = c_j->points[l_j];
+    if(c_j->farthest == c_j->points[l_j])
+        c_j->farthest = c_i->points[l_i];
+    std::swap(c_i->points[l_i], c_j->points[l_j]);
+    std::swap(rev_nn[i], rev_nn[j]);
 }

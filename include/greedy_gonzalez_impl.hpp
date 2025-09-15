@@ -1,58 +1,56 @@
-#include"greedy.hpp"
-#include<unordered_map>
-
-using namespace std;
-
 template <std::size_t d, typename Metric>
 void gonzalez(vector<Point<d, Metric>>& pts,
-                vector<const Point<d, Metric>*>& gp,
                 vector<const Point<d, Metric>*>& pred
             ){
 
-    gp.clear();
-    pred.clear();
-
-    if (pts.empty()) {
-        return;
-    }
-
-    if (pts.size() == 1) {
-        gp.push_back(&pts[0]);
-        pred.push_back(nullptr);
-        return;
-    }
-
     using Pt = Point<d, Metric>;
-    unordered_map<Pt*, Pt*> rev_nn;
-    
-    // initialize the first cell
-    gp.push_back(&pts[0]);
-    pred.push_back(nullptr);
 
-    for(auto& p: pts)
-        rev_nn[&p] = &pts[0];
+    pred = vector<const Pt*>(pts.size(), nullptr);
+
+    if (pts.empty())
+        return;
+
+    auto parent_dist = [&](size_t i){
+        return pts[i].dist(*(pred[i]));
+    };
+
+    auto update_parent = [&](size_t i, Pt& parent){
+        pred[i] = &parent;
+    };
+
+    // initialize the first cell
+    for(size_t i = 1; i < pts.size(); i++)
+        update_parent(i, pts[0]);
     
     // in each iteration
-    for(auto it = pts.begin()+1; it != pts.end(); it++){
-        // a. find the farthest point from its rev_nn
-        double max_dist = 0;
-        Pt *farthest = &(*it), *predec = &(*it);
-        for(auto it_j = pts.begin(); it_j != pts.end(); it_j++){
-            double candidate_dist = (*it_j).dist(*rev_nn[&(*it_j)]);
-            if(candidate_dist > max_dist){
-                farthest = &(*it_j);
-                predec = rev_nn[&(*it_j)];
-                max_dist = candidate_dist;
+    for(auto i = 1; i < pts.size(); i++){
+        // a. find the farthest point from its pred
+        double max_dist = parent_dist(i);
+        size_t far_i = i;
+        for(size_t j = i+1; j < pts.size(); j++){
+            double curr_dist = parent_dist(j);
+            if(curr_dist > max_dist){
+                far_i = j;
+                max_dist = curr_dist;
             }
         }
         
-        // b. for each uninserted point, check if it is closer than current rev_nn
-        for(auto it_j = pts.begin(); it_j != pts.end(); it_j++)
-            if((*it_j).dist(*rev_nn[&(*it_j)]) > (*it_j).dist(*farthest))
-                rev_nn[&(*it_j)] = farthest;
+        // b. Update the output
+        std::swap(pts[i], pts[far_i]);
+        std::swap(pred[i], pred[far_i]);
         
-        // c. Update the output
-        gp.push_back(farthest);
-        pred.push_back(predec);
+        // c. for each uninserted point, check if it is closer than current pred
+        for(auto j = i+1; j < pts.size(); j++)
+            if(parent_dist(j) > pts[j].dist(pts[i]))
+                update_parent(j, pts[i]);
     }
 }
+
+/*
+Beginning
+Computing Clarkson
+Clarkson time = 1090ms
+Computing Gonzalez
+Gonzalez time = 16754ms
+Completed
+*/

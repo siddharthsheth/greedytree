@@ -43,12 +43,22 @@ void Cell<d,Metric>::add_point(PtPtr p) {
 
 template <size_t d, typename Metric>
 double Cell<d,Metric>::dist(Pt& p) const {
-    return (*center).dist(p);
+    return center->dist(p);
 }
 
 template <size_t d, typename Metric>
 double Cell<d,Metric>::dist(const Cell& c) const {
-    return (*center).dist(*(c.center));
+    return center->dist(*(c.center));
+}
+
+template <size_t d, typename Metric>
+double Cell<d,Metric>::compare_dist(Pt& p) const {
+    return center->compare_dist(p);
+}
+
+template <size_t d, typename Metric>
+double Cell<d,Metric>::compare_dist(const Cell& c) const {
+    return center->compare_dist(*(c.center));
 }
 
 template <size_t d, typename Metric>

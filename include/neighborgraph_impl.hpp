@@ -71,7 +71,7 @@ void NeighborGraph<d, Metric>::rebalance(CellPtr a, CellPtr b){
     debug_log("PL from " << *(b->center) << " to " << *(a->center));
     size_t i_a = a->size(), i_b = 0;
     for(auto &p: b->points){
-        if(a->dist(*p) < b->dist(*p)){
+        if(a->compare_dist(*p) < b->compare_dist(*p)){
             to_move.push_back(p);
             rev_nn[pt_index(p)] = PtLoc({a, i_a});
             i_a++;

@@ -89,6 +89,10 @@ public:
      * @return Distance between centers.
      */
     double dist(const Cell& c) const;
+
+    double compare_dist(Pt& p) const;
+    double compare_dist(const Cell& c) const;
+
     /**
      * @brief Adds a point to the cell and updates radius/farthest as needed.
      * @param p Pointer to the point to add.

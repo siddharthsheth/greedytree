@@ -35,6 +35,7 @@ public:
      * @brief Alias for a pointer to a constant Point.
      */
     using PtPtr = Point<d, Metric>*;
+    using CellPtr = Cell<d, Metric>*;
     
     /**
      * @brief Static counter for assigning unique IDs to cells.
@@ -61,6 +62,7 @@ public:
      * @brief Pointer to the farthest point from the center in the cell.
      */
     PtPtr farthest;
+    vector<CellPtr> nbrs;
 
     /**
      * @brief Default constructor. Initializes an empty cell.

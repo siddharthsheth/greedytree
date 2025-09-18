@@ -13,6 +13,12 @@
 #include "neighborgraph.hpp"
 #include <vector>
 
+template <std::size_t d, typename Metric>
+using PtVec = std::vector<Point<d, Metric>>;
+
+template <std::size_t d, typename Metric>
+using PtPtrVec = std::vector<const Point<d, Metric>*>;
+
 /**
  * @brief Perform Gonzalez's greedy k-center clustering algorithm.
  *
@@ -26,8 +32,7 @@
  * between any point and its nearest center.
  */
 template <std::size_t d, typename Metric>
-void gonzalez(std::vector<Point<d, Metric>>& pts,
-              std::vector<const Point<d, Metric>*>& pred);
+void gonzalez(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
 
 /**
  * @brief Perform Clarkson's greedy clustering algorithm.
@@ -41,8 +46,7 @@ void gonzalez(std::vector<Point<d, Metric>>& pts,
  * This function implements Clarkson's variant of greedy clustering for metric spaces.
  */
 template <std::size_t d, typename Metric>
-void clarkson(std::vector<Point<d, Metric>>& pts,
-              std::vector<const Point<d, Metric>*>& pred);
+void clarkson(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
 
 #include "greedy_gonzalez_impl.hpp"
 #include "greedy_clarkson_impl.hpp"

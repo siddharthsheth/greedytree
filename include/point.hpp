@@ -74,6 +74,12 @@ public:
     Point(std::initializer_list<double> list);
 
     /**
+     * @brief Construct a point from an initializer list.
+     * @param list List of coordinate values.
+     */
+    Point(std::vector<double>& coords);
+
+    /**
      * @brief Access coordinate by index (mutable).
      * @param i Index of coordinate.
      * @return Reference to coordinate value.

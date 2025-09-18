@@ -60,6 +60,7 @@ public:
      * @brief Pair of unique_ptr to Cell and a double (for heap operations).
      */
     using HeapPair = std::pair<std::unique_ptr<Cell<d, Metric>>, double>;
+    // using HeapPair = std::pair<CellPtr, double>;
 
     using PtLoc = std::pair<CellPtr, size_t>;
 private:
@@ -71,14 +72,20 @@ private:
     /**
      * @brief Map from CellPtr to graph vertex descriptor.
      */
-    unordered_map<CellPtr, Vertex> vertex;
+    // unordered_map<CellPtr, Vertex> vertex;
+    std::vector<Vertex> vertices;
+    // std::vector<std::unique_ptr<Cell<d, Metric>>> cells;
+    std::vector<CellPtr> affected_cells;
+    
 
     /**
      * @brief Add a cell as a vertex in the graph.
      * @param c Pointer to the cell to add.
      */
     inline void add_vertex(CellPtr c) {
-        vertex[c] = boost::add_vertex(c, g);
+        // vertex[c] = boost::add_vertex(c, g);
+        vertices.push_back(boost::add_vertex(c, g));
+        add_edge(c, c);
     }
 
     /**
@@ -87,21 +94,29 @@ private:
      * @param b Pointer to second cell.
      */
     inline void add_edge(CellPtr a, CellPtr b){
-        if(!(boost::edge(vertex[a], vertex[b], g).second))
-            boost::add_edge(vertex[a], vertex[b], g);
+        // if(!(boost::edge(vertex[a], vertex[b], g).second))
+        //     boost::add_edge(vertex[a], vertex[b], g);
+        size_t a_i = index(a->center), b_i = index(b->center);
+        if(!(boost::edge(vertices[a_i], vertices[b_i], g).second))
+            boost::add_edge(vertices[a_i], vertices[b_i], g);
     }
 
     
     std::pair<adj_iter, adj_iter> nbrs(CellPtr c) {
-        return boost::adjacent_vertices(vertex[c], g);
+        // return boost::adjacent_vertices(vertex[c], g);
+        return boost::adjacent_vertices(vertices[index(c->center)], g);
     }
 
     std::vector<PtLoc> rev_nn;
-    PtPtr root_pt;
+    const PtPtr root_pt;
     
-    inline size_t pt_index(PtPtr p) const {
+    inline size_t index(PtPtr p) const {
         return static_cast<size_t>(p - root_pt);
     }
+
+    // inline size_t index(CellPtr c) const {
+    //     return index(c->center);
+    // }
     /**
      * @brief Comparator for heap operations on HeapPair.
      */
@@ -120,6 +135,7 @@ public:
      * @brief Vector of HeapPairs for heap-based operations.
      */
     vector<HeapPair> cell_heap_vec;
+    // priority_queue<HeapPair, vector<HeapPair>, CellCompare> cell_heap;
     /**
      * @brief Comparator instance for heap operations.
      */
@@ -164,8 +180,8 @@ public:
      */
     inline bool is_close_enough(const CellPtr a, const CellPtr b) const{
         return a->dist(*b) <= a->radius +
-                                b->radius +
-                                max(a->radius, b->radius);
+                        b->radius +
+                        max(a->radius, b->radius);
     }
 
     void swap_cells(size_t i, size_t j);

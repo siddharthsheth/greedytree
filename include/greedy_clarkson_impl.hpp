@@ -1,7 +1,5 @@
 template <std::size_t d, typename Metric>
-void clarkson(vector<Point<d, Metric>>& pts,
-                vector<const Point<d, Metric>*>& pred
-            ){
+void clarkson(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred){
     using CellT = Cell<d, Metric>;
     using Pt = Point<d, Metric>;
 

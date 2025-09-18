@@ -12,6 +12,14 @@ Point<d,Metric>::Point(std::initializer_list<double> list) {
     std::copy(list.begin(), list.end(), coords.begin());
 }
 
+template <std::size_t d, typename Metric>
+Point<d,Metric>::Point(std::vector<double>& list) {
+    if (list.size() != d) {
+        throw std::invalid_argument("Initializer list must have exactly d elements.");
+    }
+    std::copy(list.begin(), list.end(), coords.begin());
+}
+
 // Access operators
 template <std::size_t d, typename Metric>
 double& Point<d,Metric>::operator[](std::size_t i)

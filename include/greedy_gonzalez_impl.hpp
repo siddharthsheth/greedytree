@@ -1,7 +1,5 @@
 template <std::size_t d, typename Metric>
-void gonzalez(vector<Point<d, Metric>>& pts,
-                vector<const Point<d, Metric>*>& pred
-            ){
+void gonzalez(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred){
 
     using Pt = Point<d, Metric>;
 
@@ -14,13 +12,9 @@ void gonzalez(vector<Point<d, Metric>>& pts,
         return pts[i].compare_dist(*(pred[i]));
     };
 
-    auto update_parent = [&](size_t i, Pt& parent){
-        pred[i] = &parent;
-    };
-
     // initialize the first cell
     for(size_t i = 1; i < pts.size(); i++)
-        update_parent(i, pts[0]);
+        pred[i] = &pts[0];
     
     // in each iteration
     for(auto i = 1; i < pts.size(); i++){
@@ -42,6 +36,6 @@ void gonzalez(vector<Point<d, Metric>>& pts,
         // c. for each uninserted point, check if it is closer than current pred
         for(auto j = i+1; j < pts.size(); j++)
             if(parent_dist(j) > pts[j].compare_dist(pts[i]))
-                update_parent(j, pts[i]);
+                pred[j] = &pts[i];
     }
 }

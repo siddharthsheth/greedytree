@@ -12,7 +12,6 @@
 #define NEIGHBORGRAPH_H
 
 #include "cell.hpp"
-// #include <boost/graph/adjacency_list.hpp>
 #include <set>
 #include <queue>
 #include <unordered_map>
@@ -42,20 +41,7 @@ public:
      * @brief Pointer to a Cell.
      */
     using CellPtr = Cell<d, Metric>*;
-    /**
-     * @brief Adjacency list graph type with CellPtr as vertex property.
-     */
-    // using Graph = boost::adjacency_list<
-    //     boost::vecS, boost::vecS, boost::undirectedS,
-    //     CellPtr
-    // >;
 
-    // using adj_iter = typename boost::graph_traits<Graph>::adjacency_iterator;
-
-    /**
-     * @brief Vertex descriptor type for the graph.
-     */
-    // using Vertex = typename boost::graph_traits<Graph>::vertex_descriptor;
     /**
      * @brief Pair of unique_ptr to Cell and a double (for heap operations).
      */
@@ -64,30 +50,9 @@ public:
 
     using PtLoc = std::pair<CellPtr, size_t>;
 private:
-    /**
-     * @brief The underlying graph.
-     */
-    // Graph g;
 
-    /**
-     * @brief Map from CellPtr to graph vertex descriptor.
-     */
-    // unordered_map<CellPtr, Vertex> vertex;
-    // std::vector<Vertex> vertices;
-    // std::vector<std::unique_ptr<Cell<d, Metric>>> cells;
     std::vector<CellPtr> affected_cells;
     
-
-    /**
-     * @brief Add a cell as a vertex in the graph.
-     * @param c Pointer to the cell to add.
-     */
-    inline void add_vertex(CellPtr c) {
-        // vertex[c] = boost::add_vertex(c, g);
-        
-        // vertices.push_back(boost::add_vertex(c, g));
-        add_edge(c, c);
-    }
 
     /**
      * @brief Add an edge between two cells in the graph.
@@ -95,23 +60,11 @@ private:
      * @param b Pointer to second cell.
      */
     inline void add_edge(CellPtr a, CellPtr b){
-        // if(!(boost::edge(vertex[a], vertex[b], g).second))
-        //     boost::add_edge(vertex[a], vertex[b], g);
-
-        // size_t a_i = index(a->center), b_i = index(b->center);
-        // if(!(boost::edge(vertices[a_i], vertices[b_i], g).second))
-        //     boost::add_edge(vertices[a_i], vertices[b_i], g);
-
         a->nbrs.push_back(b);
         b->nbrs.push_back(a);
     }
 
     
-    // std::pair<adj_iter, adj_iter> nbrs(CellPtr c) {
-    //     // return boost::adjacent_vertices(vertex[c], g);
-    //     return boost::adjacent_vertices(vertices[index(c->center)], g);
-    // }
-
     std::vector<PtLoc> rev_nn;
     const PtPtr root_pt;
     
@@ -166,17 +119,6 @@ public:
      * @param b Pointer to second cell.
      */
     void rebalance(CellPtr a, CellPtr b);
-    /**
-     * @brief Get neighbors of neighbors for a given cell.
-     * @param c Pointer to the cell.
-     * @return Vector of neighboring cells' neighbors.
-     */
-    // vector<CellPtr> nbrs_of_nbrs(CellPtr c);
-    /**
-     * @brief Prune neighbors of a given cell.
-     * @param c Pointer to the cell.
-     */
-    // void prune_nbrs(CellPtr c);
     /**
      * @brief Check if two cells are close enough (according to some metric).
      * @param a Pointer to first cell.

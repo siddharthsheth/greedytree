@@ -3,10 +3,7 @@ NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& pts): root_pt(&pts[0]){
     size_t n = pts.size();
 
     rev_nn.reserve(n);
-    // cells.reserve(n);
-    // vertices.reserve(n);
     
-    // root_pt = &pts[0];
     auto root = std::make_unique<Cell<d, Metric>>(pts[0]);
     CellPtr rootptr = root.get();
 
@@ -17,7 +14,6 @@ NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& pts): root_pt(&pts[0]){
         i++;
     }
     
-    // add_vertex(rootptr);
     add_edge(rootptr, rootptr);
     
     cell_heap_vec.push_back(HeapPair({std::move(root), root->radius}));
@@ -47,28 +43,16 @@ void NeighborGraph<d, Metric>::add_cell(){
 
     auto newcell = std::make_unique<Cell<d, Metric>>(parent->farthest);
     CellPtr newcellptr = newcell.get();
-    // add_vertex(newcellptr);
     add_edge(newcellptr, newcellptr);
     
-    // affected_nbrs.erase();
     affected_cells.clear();
     // include the new cell in affected_nbrs
     affected_cells.push_back(newcellptr);
-    // rebalance(newcellptr, parent);      // self loops => unnecessary
-    // auto neighbors = nbrs(parent);
-    // for(auto nbr: make_iterator_range(neighbors))
     for(auto& c: parent->nbrs)
         rebalance(newcellptr, c);
     
     debug_log("Finding nbrs of nbrs of " << *(parent->center));
     // for nbrs_of_nbrs, restrict to affected_nbrs
-    // for(auto& neighbor: affected_cells)
-    //     for(auto newnbr: make_iterator_range(nbrs(neighbor))){
-    //         CellPtr nbrptr = g[newnbr];
-    //         if(is_close_enough(newcellptr, nbrptr))
-    //             add_edge(newcellptr, nbrptr);
-    //     }
-
     unordered_set<CellPtr> relevant_nbrs;
     for(auto& parent_nbr: affected_cells)
         for(auto& nbrptr: parent_nbr->nbrs)
@@ -81,17 +65,12 @@ void NeighborGraph<d, Metric>::add_cell(){
     debug_log("Pruning");
     // prune only affected_nbrs
     for(auto c: affected_cells){
-        // prune_nbrs(neighbor);
         auto iter = std::partition(c->nbrs.begin(), c->nbrs.end(), 
                 [&](const CellPtr nbr){
                     return is_close_enough(c, nbr);
                 });
         c->nbrs.erase(iter, c->nbrs.end());
     }
-    // neighbors = nbrs(newcellptr);
-    // for(auto nbr: make_iterator_range(neighbors))
-        // prune_nbrs(g[nbr]);
-    // prune_nbrs(newcellptr);             // self loops => unnecessary
     
     cell_heap_vec.push_back(HeapPair({std::move(newcell), newcellptr->radius}));
     std::push_heap(cell_heap_vec.begin(), cell_heap_vec.end(), comparator);
@@ -172,46 +151,6 @@ void NeighborGraph<d, Metric>::rebalance(CellPtr a, CellPtr b){
     // if(points.size() > b->points.size())
     //     b->update_radius();
 }
-
-// template <std::size_t d, typename Metric>
-// CellPtrVec<d, Metric> NeighborGraph<d, Metric>::nbrs_of_nbrs(CellPtr c){
-//     std::unordered_set<CellPtr> output;
-    
-//     auto neighbors = nbrs(c);
-//     for(auto nbr: make_iterator_range(neighbors)){
-//         debug_log("Found neighbor of " << *(c->center) << " : " << *(g[nbr]->center));
-//         auto nbrs_of_nbr = boost::adjacent_vertices(nbr, g);
-//         for(auto nbr_of_nbr: make_iterator_range(nbrs_of_nbr)){
-//             debug_log("Found nbr of nbr of " << *(c->center) << " : " << *(g[nbr_of_nbr]->center));
-//             output.insert(g[nbr_of_nbr]);
-//         }
-//     }
-    
-//     output.insert(c);
-    
-//     return vector<CellPtr>(output.begin(), output.end());
-// }
-
-// template <std::size_t d, typename Metric>
-// void NeighborGraph<d, Metric>::prune_nbrs(CellPtr c){
-//     vector<CellPtr> to_delete;
-    
-//     auto neighbors = nbrs(c);
-//     for(auto nbr: make_iterator_range(neighbors)){
-//         CellPtr nbrptr = g[nbr];
-//         if(!is_close_enough(c, nbrptr)){
-//             debug_log("Pruning: (" << *(c->center) << ", " << *(nbrptr->center) << ") as d(c,nbrptr) = "
-//                 << c->dist(*nbrptr) << " > " << c->radius << " + " << nbrptr->radius
-//                 << " + " << max(c->radius, nbrptr->radius) << " = "
-//                 << c->radius + nbrptr->radius + max(c->radius, nbrptr->radius));
-//             to_delete.push_back(nbrptr);
-//         }
-//     }
-    
-//     for(auto nbr: to_delete)
-//         // boost::remove_edge(vertex[c], vertex[nbr], g);
-//         boost::remove_edge(vertices[index(c->center)], vertices[index(nbr->center)], g);
-// }
 
 template<size_t d, typename Metric>
 bool NeighborGraph<d, Metric>::CellCompare::operator()(

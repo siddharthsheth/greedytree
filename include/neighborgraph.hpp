@@ -53,24 +53,23 @@ private:
 
     std::vector<CellPtr> affected_cells;
     
-
     /**
      * @brief Add an edge between two cells in the graph.
      * @param a Pointer to first cell.
      * @param b Pointer to second cell.
      */
     inline void add_edge(CellPtr a, CellPtr b){
-        a->nbrs.push_back(b);
-        b->nbrs.push_back(a);
+        (a->nbrs).push_back(b);
+        (b->nbrs).push_back(a);
     }
 
     
     std::vector<PtLoc> rev_nn;
-    const PtPtr root_pt;
+    // const PtPtr root_pt;
     
-    inline size_t index(PtPtr p) const {
-        return static_cast<size_t>(p - root_pt);
-    }
+    // inline size_t index(PtPtr p) const {
+    //     return static_cast<size_t>(p - root_pt);
+    // }
 
     // inline size_t index(CellPtr c) const {
     //     return index(c->center);
@@ -89,6 +88,8 @@ private:
     };
 
 public:
+    std::vector<Pt> permutation;
+
     /**
      * @brief Vector of HeapPairs for heap-based operations.
      */

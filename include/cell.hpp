@@ -57,17 +57,17 @@ public:
     /**
      * @brief Vector of pointers to points contained in the cell.
      */
-    vector<PtPtr> points;
+    vector<Pt> points;
     /**
      * @brief Pointer to the farthest point from the center in the cell.
      */
-    PtPtr farthest;
+    size_t farthest;
     vector<CellPtr> nbrs;
 
-    /**
-     * @brief Default constructor. Initializes an empty cell.
-     */
-    Cell();
+    // /**
+    //  * @brief Default constructor. Initializes an empty cell.
+    //  */
+    // Cell();
     /**
      * @brief Constructs a cell with a single point (by reference).
      * @param p Reference to the point to initialize the cell with.
@@ -99,7 +99,11 @@ public:
      * @brief Adds a point to the cell and updates radius/farthest as needed.
      * @param p Pointer to the point to add.
      */
-    void add_point(PtPtr p);
+    // void add_point(PtPtr p);
+
+    // void extend_points(vector<PtPtr>& pts);
+    // void replace_points(vector<PtPtr>& pts);
+
     /**
      * @brief Updates the cell's radius and farthest point.
      */
@@ -115,6 +119,8 @@ public:
      * @return True if equal, false otherwise.
      */
     bool operator==(const Cell& other) const;
+
+    Pt pop_farthest();
 };
 
 /**

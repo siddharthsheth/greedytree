@@ -31,8 +31,10 @@ using PtPtrVec = std::vector<const Point<d, Metric>*>;
  * This function selects cluster centers greedily to maximize the minimum distance
  * between any point and its nearest center.
  */
+// template <std::size_t d, typename Metric>
+// void gonzalez(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
 template <std::size_t d, typename Metric>
-void gonzalez(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
+void gonzalez(PtVec<d, Metric>& pts, vector<size_t>& pred);
 
 /**
  * @brief Perform Clarkson's greedy clustering algorithm.
@@ -45,8 +47,10 @@ void gonzalez(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
  *
  * This function implements Clarkson's variant of greedy clustering for metric spaces.
  */
+// template <std::size_t d, typename Metric>
+// void clarkson(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
 template <std::size_t d, typename Metric>
-void clarkson(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
+void clarkson(PtVec<d, Metric>& pts, vector<size_t>& pred);
 
 #include "greedy_gonzalez_impl.hpp"
 #include "greedy_clarkson_impl.hpp"

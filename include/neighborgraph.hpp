@@ -41,39 +41,33 @@ public:
      * @brief Pointer to a Cell.
      */
     using CellPtr = Cell<d, Metric>*;
-
+    using CellRef = Cell<d,Metric>&;
+    
     /**
      * @brief Pair of unique_ptr to Cell and a double (for heap operations).
      */
-    using HeapPair = std::pair<std::unique_ptr<Cell<d, Metric>>, double>;
+    // using HeapPair = std::pair<std::unique_ptr<Cell<d, Metric>>, double>;
     // using HeapPair = std::pair<CellPtr, double>;
+    using HeapPair = std::pair<size_t, double>;
+    
 
-    using PtLoc = std::pair<CellPtr, size_t>;
+    // using PtLoc = std::pair<CellPtr, size_t>;
+    std::vector<Cell<d,Metric>> cells;
+
 private:
 
-    std::vector<CellPtr> affected_cells;
+    std::vector<size_t> affected_cells;
     
     /**
      * @brief Add an edge between two cells in the graph.
      * @param a Pointer to first cell.
      * @param b Pointer to second cell.
      */
-    inline void add_edge(CellPtr a, CellPtr b){
-        (a->nbrs).push_back(b);
-        (b->nbrs).push_back(a);
+    inline void add_edge(size_t i, size_t j){
+        cells[i].nbrs.push_back(j);
+        cells[j].nbrs.push_back(i);
     }
 
-    
-    std::vector<PtLoc> rev_nn;
-    // const PtPtr root_pt;
-    
-    // inline size_t index(PtPtr p) const {
-    //     return static_cast<size_t>(p - root_pt);
-    // }
-
-    // inline size_t index(CellPtr c) const {
-    //     return index(c->center);
-    // }
     /**
      * @brief Comparator for heap operations on HeapPair.
      */
@@ -93,8 +87,7 @@ public:
     /**
      * @brief Vector of HeapPairs for heap-based operations.
      */
-    vector<HeapPair> cell_heap_vec;
-    // priority_queue<HeapPair, vector<HeapPair>, CellCompare> cell_heap;
+    std::priority_queue<HeapPair, std::vector<HeapPair>, CellCompare> cell_heap;
     /**
      * @brief Comparator instance for heap operations.
      */
@@ -103,13 +96,14 @@ public:
      * @brief Get the top cell from the heap.
      * @return Pointer to the top cell.
      */
-    CellPtr heap_top();
+    // CellPtr heap_top();
+    size_t heap_top();
 
     /**
      * @brief Construct a NeighborGraph from a vector of points.
      * @param P Vector of points to initialize the graph.
      */
-    NeighborGraph(vector<Pt>& pts);
+    NeighborGraph(std::vector<Pt>& pts);
     /**
      * @brief Add a new cell to the graph.
      */
@@ -119,27 +113,33 @@ public:
      * @param a Pointer to first cell.
      * @param b Pointer to second cell.
      */
-    void rebalance(CellPtr a, CellPtr b);
+    // void rebalance(CellPtr a, CellPtr b);
+    void rebalance(size_t i, size_t j);
     /**
      * @brief Check if two cells are close enough (according to some metric).
      * @param a Pointer to first cell.
      * @param b Pointer to second cell.
      * @return True if close enough, false otherwise.
      */
-    inline bool is_close_enough(const CellPtr a, const CellPtr b) const{
-        return a->dist(*b) <= a->radius +
-                        b->radius +
-                        max(a->radius, b->radius);
+    inline bool is_close_enough(const size_t i, const size_t j) const{
+        return cells[i].dist(cells[j]) <= cells[i].radius +
+                        cells[j].radius +
+                        max(cells[i].radius, cells[j].radius);
     }
 
-    void swap_cells(size_t i, size_t j);
+    inline bool is_close_enough(const size_t i, const size_t j, double r) const{
+        return cells[i].dist(cells[j]) <= 3*r;
+    }
+
+    std::vector<Pt> get_permutation(bool move);
+    bool centers_moved;
 };
 
 /**
  * @brief Type alias for vector of Cell pointers.
  */
 template<size_t d, typename Metric>
-using CellPtrVec = vector<Cell<d, Metric>*>;
+using CellPtrVec = std::vector<Cell<d, Metric>*>;
 
 /**
  * @brief Type alias for pointer to Cell.

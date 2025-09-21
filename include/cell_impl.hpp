@@ -11,74 +11,41 @@ int Cell<d, Metric>::next_id = 0;
 // }
 
 template <size_t d, typename Metric>
-Cell<d,Metric>::Cell(Pt& p) :
+Cell<d,Metric>::Cell(Pt p) :
                     id(next_id++),
-                    center(&p),
+                    center(std::move(p)),
                     radius(0),
                     farthest(0) {
-    debug_log("Created cell with center " << *center);
-}
-
-template <size_t d, typename Metric>
-Cell<d,Metric>::Cell(PtPtr p) :
-                        id(next_id++),
-                        center(p),
-                        radius(0),
-                        farthest(0) {
-    debug_log("Created cell with pointer center " << *center);
+    debug_log("Cell: Created cell with center " << center);
 }
 
 // template <size_t d, typename Metric>
-// void Cell<d,Metric>::add_point(PtPtr p) {
-//     points.push_back(p);
-//     double dist_p = dist(*p);
-//     if (dist_p > radius) {
-//         radius = dist_p;
-//         farthest = p;
-//     }
-// }
-
-// template <size_t d, typename Metric>
-// void Cell<d,Metric>::extend_points(vector<PtPtr>& pts){
-//     size_t old_len = points.size();
-//     points.insert(points.end(),
-//                 std::make_move_iterator(pts.begin()),
-//                 std::make_move_iterator(pts.end()));
-//     for (auto p = points.begin()+old_len; p != points.end(); p++) {
-//         double dist_p = dist(**p);
-//         if (dist_p > radius) {
-//             radius = dist_p;
-//             farthest = *p;
-//         }
-//     }
-// }
-
-// template <size_t d, typename Metric>
-// void Cell<d,Metric>::replace_points(vector<PtPtr>& pts){
-//     size_t old_len = points.size();
-//     points = std::move(pts);
-//     if(points.size() < old_len)
-//         update_radius();
+// Cell<d,Metric>::Cell(PtPtr p) :
+//                         id(next_id++),
+//                         center(p),
+//                         radius(0),
+//                         farthest(0) {
+//     debug_log("Created cell with pointer center " << *center);
 // }
 
 template <size_t d, typename Metric>
 double Cell<d,Metric>::dist(Pt& p) const {
-    return center->dist(p);
+    return center.dist(p);
 }
 
 template <size_t d, typename Metric>
 double Cell<d,Metric>::dist(const Cell& c) const {
-    return center->dist(*(c.center));
+    return center.dist(c.center);
 }
 
 template <size_t d, typename Metric>
 double Cell<d,Metric>::compare_dist(Pt& p) const {
-    return center->compare_dist(p);
+    return center.compare_dist(p);
 }
 
 template <size_t d, typename Metric>
 double Cell<d,Metric>::compare_dist(const Cell& c) const {
-    return center->compare_dist(*(c.center));
+    return center.compare_dist(c.center);
 }
 
 template <size_t d, typename Metric>

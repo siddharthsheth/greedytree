@@ -49,7 +49,7 @@ public:
     /**
      * @brief Pointer to the center point of the cell.
      */
-    PtPtr center;
+    Pt center;
     /**
      * @brief Radius of the cell (distance from center to farthest point).
      */
@@ -57,12 +57,12 @@ public:
     /**
      * @brief Vector of pointers to points contained in the cell.
      */
-    vector<Pt> points;
+    std::vector<Pt> points;
     /**
      * @brief Pointer to the farthest point from the center in the cell.
      */
     size_t farthest;
-    vector<CellPtr> nbrs;
+    std::vector<size_t> nbrs;
 
     // /**
     //  * @brief Default constructor. Initializes an empty cell.
@@ -72,12 +72,12 @@ public:
      * @brief Constructs a cell with a single point (by reference).
      * @param p Reference to the point to initialize the cell with.
      */
-    Cell(Pt& p);
-    /**
-     * @brief Constructs a cell with a single point (by pointer).
-     * @param p Pointer to the point to initialize the cell with.
-     */
-    Cell(PtPtr p);
+    Cell(Pt p);
+    // /**
+    //  * @brief Constructs a cell with a single point (by pointer).
+    //  * @param p Pointer to the point to initialize the cell with.
+    //  */
+    // Cell(PtPtr p);
     
     /**
      * @brief Computes the distance from the cell's center to a given point.
@@ -101,8 +101,8 @@ public:
      */
     // void add_point(PtPtr p);
 
-    // void extend_points(vector<PtPtr>& pts);
-    // void replace_points(vector<PtPtr>& pts);
+    // void extend_points(std::vector<PtPtr>& pts);
+    // void replace_points(std::vector<PtPtr>& pts);
 
     /**
      * @brief Updates the cell's radius and farthest point.

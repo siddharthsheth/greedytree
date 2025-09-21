@@ -31,30 +31,60 @@ BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts){
     return std::move(root);
 }
 
+// template<size_t d, typename Metric>
+// BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
+// {
+//     using PtPtr = const Point<d, Metric>*;
+//     using BallTreePtr = BallTree<d, Metric>*;
+    
+//     vector<PtPtr> pred;
+//     clarkson(pts, pred);
+    
+//     PtPtr root_pt = &pts[0];
+//     auto root = std::make_unique<BallTree<d, Metric>>(root_pt);
+    
+//     unordered_map<PtPtr, BallTreePtr> leaf;
+//     leaf[&pts[0]] = root.get();
+
+//     for(auto i = 1; i < pts.size(); i++){
+//         auto node = leaf[pred[i]];
+//         PtPtr right_pt = &pts[i];
+        
+//         node->left = std::make_unique<BallTree<d, Metric>>(pred[i]);
+//         node->right = std::make_unique<BallTree<d, Metric>>(right_pt);
+        
+//         leaf[pred[i]] = (node->left).get();
+//         leaf[right_pt] = (node->right).get();
+//     }
+
+//     return std::move(root);
+// }
+
 template<size_t d, typename Metric>
 BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
 {
     using PtPtr = const Point<d, Metric>*;
     using BallTreePtr = BallTree<d, Metric>*;
     
-    vector<PtPtr> pred;
+    vector<size_t> pred;
     clarkson(pts, pred);
     
     PtPtr root_pt = &pts[0];
     auto root = std::make_unique<BallTree<d, Metric>>(root_pt);
     
-    unordered_map<PtPtr, BallTreePtr> leaf;
-    leaf[&pts[0]] = root.get();
+    // unordered_map<size_t, BallTreePtr> leaf;
+    vector<BallTreePtr> leaf(pts.size(), nullptr);
+    leaf[0] = root.get();
 
     for(auto i = 1; i < pts.size(); i++){
         auto node = leaf[pred[i]];
         PtPtr right_pt = &pts[i];
         
-        node->left = std::make_unique<BallTree<d, Metric>>(pred[i]);
+        node->left = std::make_unique<BallTree<d, Metric>>(node->center);
         node->right = std::make_unique<BallTree<d, Metric>>(right_pt);
         
         leaf[pred[i]] = (node->left).get();
-        leaf[right_pt] = (node->right).get();
+        leaf[i] = (node->right).get();
     }
 
     return std::move(root);

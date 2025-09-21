@@ -5,17 +5,32 @@
 #include <cmath>
 #include <limits>
 
+// struct GonzalezAlgo {
+//     template <std::size_t d, typename Metric>
+//     void operator()(std::vector<Point<d, Metric>>& pts,
+//                     std::vector<const Point<d, Metric>*>& pred) const {
+//         gonzalez(pts, pred);
+//     }
+// };
+// struct ClarksonAlgo {
+//     template <std::size_t d, typename Metric>
+//     void operator()(std::vector<Point<d, Metric>>& pts,
+//                     std::vector<const Point<d, Metric>*>& pred) const {
+//         clarkson(pts, pred);
+//     }
+// };
+
 struct GonzalezAlgo {
     template <std::size_t d, typename Metric>
     void operator()(std::vector<Point<d, Metric>>& pts,
-                    std::vector<const Point<d, Metric>*>& pred) const {
+                    std::vector<size_t>& pred) const {
         gonzalez(pts, pred);
     }
 };
 struct ClarksonAlgo {
     template <std::size_t d, typename Metric>
     void operator()(std::vector<Point<d, Metric>>& pts,
-                    std::vector<const Point<d, Metric>*>& pred) const {
+                    std::vector<size_t>& pred) const {
         clarkson(pts, pred);
     }
 };
@@ -34,7 +49,7 @@ TYPED_TEST_P(GreedyTest, Empty) {
     using MyPoint = typename TestFixture::MyPoint;
     TypeParam algo;
     std::vector<MyPoint> empty_pts;
-    std::vector<const MyPoint*> pred;
+    std::vector<size_t> pred;
     EXPECT_NO_THROW(algo(empty_pts, pred));
     EXPECT_TRUE(pred.empty());
 }
@@ -42,7 +57,7 @@ TYPED_TEST_P(GreedyTest, Empty) {
 TYPED_TEST_P(GreedyTest, SinglePoint) {
     using MyPoint = typename TestFixture::MyPoint;
     TypeParam algo;
-    std::vector<const MyPoint*> pred;
+    std::vector<size_t> pred;
     std::vector<MyPoint> single_pt{MyPoint{42.0}};
     algo(single_pt, pred);
     ASSERT_EQ(pred.size(), 1);
@@ -52,7 +67,7 @@ TYPED_TEST_P(GreedyTest, SinglePoint) {
 TYPED_TEST_P(GreedyTest, TwoPoints) {
     using MyPoint = typename TestFixture::MyPoint;
     TypeParam algo;
-    std::vector<const MyPoint*> pred;
+    std::vector<size_t> pred;
     std::vector<MyPoint> two_pts{MyPoint{-1.0}, MyPoint{3.0}};
     algo(two_pts, pred);
     ASSERT_EQ(pred.size(), 2);
@@ -67,7 +82,7 @@ TYPED_TEST_P(GreedyTest, SimpleGreedy) {
     std::vector<MyPoint> pts, exp_gp;
     for(int i = 0; i < 3; i++)
         pts.push_back(MyPoint{double(i)});
-    std::vector<const MyPoint*> pred;
+    std::vector<size_t> pred;
     exp_gp = std::vector<MyPoint>({pts[0], pts[2], pts[1]});
     
     algo(pts, pred);
@@ -86,7 +101,7 @@ TYPED_TEST_P(GreedyTest, ExponentialGreedy) {
     for(int i = 98; i > 0; i--)
         exp_gp.push_back(pts[i]);
     
-    std::vector<const MyPoint*> pred;
+    std::vector<size_t> pred;
     algo(pts, pred);
     EXPECT_EQ(pts, exp_gp);
 }
@@ -98,7 +113,7 @@ TYPED_TEST_P(GreedyTest, Random) {
     std::vector<MyPoint> pts;
     for(auto& p: coords)
         pts.push_back(MyPoint{p});
-    std::vector<const MyPoint*> pred;
+    std::vector<size_t> pred;
     algo(pts, pred);
     for(auto& p: pts)
         gp_coords.push_back(p.coords[0]);
@@ -123,7 +138,7 @@ TYPED_TEST_P(GreedyTest, PlanarPointsGP) {
     exp_gp.push_back(pts[2]);      // 5, 6
     exp_gp.push_back(pts[1]);      // 1, 2
     
-    vector<const PlanarPoint*> pred;
+    vector<size_t> pred;
     
     algo(pts, pred);
 
@@ -133,27 +148,29 @@ TYPED_TEST_P(GreedyTest, PlanarPointsGP) {
 TYPED_TEST_P(GreedyTest, PlanarPointsPred) {
     using PlanarPoint = Point<2, L1Metric>;
     TypeParam algo;
-    vector<PlanarPoint> pts, exp_pred_pts, pred_pts;
+    vector<PlanarPoint> pts;
     pts.push_back(PlanarPoint({0, 0}));
     pts.push_back(PlanarPoint({1, 2}));
     pts.push_back(PlanarPoint({5, 6}));
     pts.push_back(PlanarPoint({15, 0}));
     pts.push_back(PlanarPoint({8, 5}));
-
-    exp_pred_pts.push_back(pts[0]);
-    exp_pred_pts.push_back(pts[3]);
-    exp_pred_pts.push_back(pts[4]);
-    exp_pred_pts.push_back(pts[0]);
     
-    vector<const PlanarPoint*> pred, exp_pred;
+    vector<size_t> pred, exp_pred;
+
+    exp_pred.push_back(-1);
+    exp_pred.push_back(0);
+    exp_pred.push_back(1);
+    exp_pred.push_back(2);
+    exp_pred.push_back(0);
+    
     
     algo(pts, pred);
 
-    for(auto& p: pred)
-        if(p)
-            pred_pts.push_back(*p);
+    // for(auto& p: pred)
+    //     if(p)
+    //         pred_pts.push_back(*p);
 
-    EXPECT_EQ(pred_pts, exp_pred_pts);
+    EXPECT_EQ(pred, exp_pred);
 }
 
 TYPED_TEST_P(GreedyTest, SpatialPointsGP) {
@@ -167,7 +184,7 @@ TYPED_TEST_P(GreedyTest, SpatialPointsGP) {
     pts.push_back(SpatialPoint({5, 6, 9}));
     pts.push_back(SpatialPoint({8, 5, 1}));
     
-    vector<const SpatialPoint*> pred;
+    vector<size_t> pred;
 
     exp_gp.push_back(pts[0]);      // 0, 0, 5
     exp_gp.push_back(pts[1]);      // 15, 0, 10
@@ -183,27 +200,28 @@ TYPED_TEST_P(GreedyTest, SpatialPointsGP) {
 TYPED_TEST_P(GreedyTest, SpatialPointsPred) {
     using SpatialPoint = Point<3, L2Metric>;
     TypeParam algo;
-    vector<SpatialPoint> pts, exp_pred_pts, pred_pts;
+    vector<SpatialPoint> pts;
     pts.push_back(SpatialPoint({0, 0, 5}));
     pts.push_back(SpatialPoint({1, 3, 3}));
     pts.push_back(SpatialPoint({5, 6, 9}));
     pts.push_back(SpatialPoint({15, 0, 10}));
     pts.push_back(SpatialPoint({8, 5, 1}));
     
-    vector<const SpatialPoint*> pred;
+    vector<size_t> exp_pred, pred;
 
-    exp_pred_pts.push_back(pts[0]);
-    exp_pred_pts.push_back(pts[0]);
-    exp_pred_pts.push_back(pts[4]);
-    exp_pred_pts.push_back(pts[0]);
+    exp_pred.push_back(-1);
+    exp_pred.push_back(0);
+    exp_pred.push_back(0);
+    exp_pred.push_back(2);
+    exp_pred.push_back(0);
 
     algo(pts, pred);
 
-    for(auto& p: pred)
-        if(p)
-            pred_pts.push_back(*p);
+    // for(auto& p: pred)
+    //     if(p)
+    //         pred_pts.push_back(*p);
 
-    EXPECT_EQ(pred_pts, exp_pred_pts);
+    EXPECT_EQ(pred, exp_pred);
 }
 
 // Register all test cases

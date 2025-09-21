@@ -11,6 +11,7 @@
 #define GREEDY_H
 
 #include "neighborgraph.hpp"
+#include "utils.hpp"
 #include <vector>
 
 template <std::size_t d, typename Metric>

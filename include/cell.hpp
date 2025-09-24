@@ -15,6 +15,7 @@
 #include "point.hpp"
 #include <vector>
 #include <memory>
+#include <cassert>
 
 using namespace std;
 

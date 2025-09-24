@@ -14,9 +14,9 @@
 #include "cell.hpp"
 #include <set>
 #include <queue>
-#include <unordered_map>
 #include <unordered_set>
 #include <iostream>
+#include <boost/unordered/unordered_flat_set.hpp>
 
 /**
  * @brief Graph of cells for neighbor relationships in metric space.
@@ -57,6 +57,8 @@ public:
 private:
 
     std::vector<size_t> affected_cells;
+    // unordered_set<size_t> relevant_nbrs;
+    boost::unordered_flat_set<size_t> nbrs;
     
     /**
      * @brief Add an edge between two cells in the graph.
@@ -122,9 +124,12 @@ public:
      * @return True if close enough, false otherwise.
      */
     inline bool is_close_enough(const size_t i, const size_t j) const{
-        return cells[i].dist(cells[j]) <= cells[i].radius +
-                        cells[j].radius +
-                        max(cells[i].radius, cells[j].radius);
+        double i_r = cells[i].radius;
+        double j_r = cells[j].radius;
+        double min_r = min(i_r, j_r);
+        double max_r = max(i_r, j_r);
+        return min_r > 0 && cells[i].dist(cells[j]) <= i_r + j_r + max_r;
+        // return cells[i].dist(cells[j]) <= i_r + j_r + max_r;
     }
 
     inline bool is_close_enough(const size_t i, const size_t j, double r) const{

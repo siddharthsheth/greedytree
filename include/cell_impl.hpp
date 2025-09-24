@@ -62,9 +62,11 @@ void Cell<d,Metric>::update_radius() {
 
 template <size_t d, typename Metric>
 Point<d,Metric> Cell<d,Metric>:: pop_farthest(){
+    assert(!points.empty());
     std::swap(points[farthest], points.back());
     Pt output = std::move(points.back());
     points.pop_back();
+    update_radius();
     return output;
 }
 

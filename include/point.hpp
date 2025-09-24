@@ -25,6 +25,7 @@
 // Uncomment to enable debug logging
 // #define DEBUG
 #define DISPLAY
+// #define STAT
 
 #ifdef DEBUG
 // Open a global debug stream (append mode so logs persist)
@@ -42,6 +43,13 @@ static std::ofstream debug_stream("debug.log", std::ios::app);
 #  define display_log(x) cout << x << std::endl
 #else
 #  define display_log(x) do {} while (0)
+#endif
+
+#ifdef STAT
+static std::ofstream stat_stream("stats.csv", std::ios::app);
+#  define stat_log(x) stat_stream << x << std::endl
+#else
+#  define stat_log(x) do {} while (0)
 #endif
 
 // Forward declaration for friend operator<<

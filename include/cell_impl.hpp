@@ -1,15 +1,6 @@
 template<size_t d, typename Metric>
 int Cell<d, Metric>::next_id = 0;
 
-// template <size_t d, typename Metric>
-// Cell<d,Metric>::Cell() :
-//                         id(next_id++),
-//                         center(&origin<d, Metric>),
-//                         radius(0),
-//                         farthest(&origin<d, Metric>){
-//     debug_log("Created cell centered at origin.");
-// }
-
 template <size_t d, typename Metric>
 Cell<d,Metric>::Cell(Pt p) :
                     id(next_id++),
@@ -18,15 +9,6 @@ Cell<d,Metric>::Cell(Pt p) :
                     farthest(0) {
     debug_log("Cell: Created cell with center " << center);
 }
-
-// template <size_t d, typename Metric>
-// Cell<d,Metric>::Cell(PtPtr p) :
-//                         id(next_id++),
-//                         center(p),
-//                         radius(0),
-//                         farthest(0) {
-//     debug_log("Created cell with pointer center " << *center);
-// }
 
 template <size_t d, typename Metric>
 double Cell<d,Metric>::dist(Pt& p) const {
@@ -51,6 +33,7 @@ double Cell<d,Metric>::compare_dist(const Cell& c) const {
 template <size_t d, typename Metric>
 void Cell<d,Metric>::update_radius() {
     radius = 0;
+    farthest = -1;
     for (size_t i=0; i < points.size(); i++) {
         double dist_p = dist(points[i]);
         if (dist_p > radius) {

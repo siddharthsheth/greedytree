@@ -1,39 +1,3 @@
-// template <std::size_t d, typename Metric>
-// void clarkson(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred){
-//     using CellT = Cell<d, Metric>;
-//     using Pt = Point<d, Metric>;
-
-//     pred = vector<const Pt*>(pts.size(), nullptr);
-
-//     if (pts.empty())
-//         return;
-
-//     size_t n = pts.size();
-//     NeighborGraph<d, Metric> G(pts);
-//     CellT* root_cell = G.heap_top();
-//     pts = vector<Pt>({*(root_cell->center)});
-    
-//     debug_log("Center of root is at " << *(root_cell->center));
-    
-//     pred[0] = nullptr;
-    
-//     for(auto i = 1; i < n; i++){
-//         CellT* cell = G.heap_top();
-//         // size_t far_i = cell->farthest - &pts[0];
-        
-//         debug_log("Center of curr cell is at " << *(cell->center) << " and its farthest point is " << cell->points[cell->farthest]);
-
-//         // G.swap_cells(i, far_i);        
-//         // std::swap(pts[i], pts[far_i]);
-//         // pts.push_back(*(cell->farthest));
-//         pred[i] = cell->center;
-        
-//         G.add_cell();
-//     }
-//     pts = std::move(G.permutation);
-//     debug_log("Number of cells created: " << CellT::next_id);
-// }
-
 template <std::size_t d, typename Metric>
 void clarkson(PtVec<d, Metric>& pts, vector<size_t>& pred){
     using CellT = Cell<d, Metric>;
@@ -41,30 +5,48 @@ void clarkson(PtVec<d, Metric>& pts, vector<size_t>& pred){
 
     size_t n = pts.size();
     size_t num_cells_exist = CellT::next_id;
+
+    // initialize pred
     pred = vector<size_t>(n, -1);
 
     if (pts.empty())
         return;
 
+    // create neighbor graph
     NeighborGraph<d, Metric> G(pts);
-    CellT& root_cell = G.cells[0];
-    
-    debug_log("Center of root is at " << root_cell.center);
-    
-    for(auto i = 1; i < n; i++){
-        size_t cell_i = G.heap_top();
-        CellT& cell = G.cells[cell_i];
-        // size_t far_i = cell->farthest - &pts[0];
-        
-        debug_log("Center of curr cell is at " << cell.center << " and its farthest point is " << cell.points[cell.farthest]);
 
+    debug_log("Center of root is at " << G.cells[0].center);
+    
+#ifdef STAT
+    stat_log("i, mean, std_dev, 25, 50, 75, max");
+#endif
+    for(auto i = 1; i < n; i++){
+        // get the index of the cell at the top of the cell heap
+        size_t cell_i = G.heap_top();
+        // set it to be the parent of the ith pt in the permutation
         pred[i] = cell_i;
-        
+        // add the next cell to the neighbor graph
         G.add_cell();
+
+        debug_log("Center of parent cell is at " << G.cells[cell_i].center << " and its farthest point is " << G.cells[cell_i].points[cells[cell_i].farthest]);
+
+#ifdef STAT
+        vector<size_t> nbrs(G.cells.size(), -1);
+        for(auto j = 0; j < G.cells.size(); j++){
+            nbrs[j] = G.cells[j].nbrs.size();
+        }
+        auto [mean, std] = mean_std_dev(nbrs);
+        std::sort(nbrs.begin(), nbrs.end());
+        stat_log(i<<','<<mean<<','<< std <<','<<nbrs[i/4]<<','<<nbrs[i/2]<<','<<nbrs[3*i/4]<<','<<nbrs.back());
+#endif
     }
+    // extract the greedy permutation from the neighbor graph
     pts = std::move(G.get_permutation(true));
+    
     debug_log("Number of cells created: " << CellT::next_id - num_cells_exist);
 
+#ifdef STAT
     display_malloc_usage();
     display_phys_footprint();
+#endif
 }

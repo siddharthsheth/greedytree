@@ -28,21 +28,6 @@ NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& pts): centers_moved(false){
     debug_log("NeighborGraph: Root cell created.");
 }
 
-// template <std::size_t d, typename Metric>
-// bool NeighborGraph<d, Metric>::is_close_enough(const CellPtr a, const CellPtr b) const{
-//     if( a->dist(*b) <= a->radius + b->radius + max(a->radius, b->radius))
-//         debug_log("Allowing: (" << *(a->center) << ", " << *(b->center) << ") as d(a,b) = "
-//             << a->dist(*b) << " <= " << a->radius << " + " << b->radius
-//             << " + " << max(a->radius, b->radius) << " = "
-//             << a->radius + b->radius + max(a->radius, b->radius));
-//     else
-//         debug_log("Ignoring: (" << *(a->center) << ", " << *(b->center) << ") as d(a,b) = "
-//             << a->dist(*b) << " > " << a->radius << " + " << b->radius
-//             << " + " << max(a->radius, b->radius) << " = "
-//             << a->radius + b->radius + max(a->radius, b->radius));
-//     return a->dist(*b) <= a->radius + b->radius + max(a->radius, b->radius);
-// }
-
 template <std::size_t d, typename Metric>
 void NeighborGraph<d, Metric>::add_cell(){
     if(centers_moved){
@@ -212,7 +197,7 @@ std::vector<Point<d, Metric>> NeighborGraph<d, Metric>::get_permutation(bool mov
         return output;
     }
     output.reserve(cells.size());
-    // if centers are to moved, move them
+    // if centers are to be moved, move them
     if(move){
         for(auto&c: cells)
             output.push_back(std::move(c.center));

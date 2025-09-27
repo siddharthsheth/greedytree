@@ -5,16 +5,21 @@ NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& pts): centers_moved(false){
     cells.reserve(pts.size());
 
     // extract seed point from input vector
-    std::swap(pts.front(), pts.back());
-    Pt root_pt = std::move(pts.back());
-    pts.pop_back();
+    // std::swap(pts.front(), pts.back());
+    // Pt root_pt = std::move(pts.back());
+    // pts.pop_back();
+
+    global_points = std::move(pts);
     
     // initialize root cell
-    cells.push_back(Cell(std::move(root_pt)));
+    // cells.push_back(Cell(std::move(root_pt)));
+    cells.push_back(Cell(0, global_points));
     CellRef root = cells[0];
 
     // point location for root cell
-    root.points = std::move(pts);
+    // root.points = std::move(pts);
+    root.points = vector<size_t>(global_points.size());
+    std::iota(root.points.begin(), root.points.end(), 0);
 
     // radius update for root cell
     root.update_radius();
@@ -56,9 +61,13 @@ void NeighborGraph<d, Metric>::rebalance(size_t i, size_t j){
     CellRef b = cells[j];
     
     // partition the b.points into those that stay and those that move
-    auto iter = std::partition(b.points.begin(), b.points.end(), [&](Pt& p){
-        return a.compare_dist(p) >= b.compare_dist(p);
+    // auto iter = std::partition(b.points.begin(), b.points.end(), [&](Pt& p){
+    //     return a.compare_dist(p) >= b.compare_dist(p);
+    // });
+    auto iter = std::partition(b.points.begin(), b.points.end(), [&](size_t& p_i){
+        return a.compare_dist(global_points[p_i]) >= b.compare_dist(global_points[p_i]);
     });
+    
     // b.points.begin() ... iter should stay and iter ... b.points.end() should move
 
     // if something should move
@@ -72,7 +81,7 @@ void NeighborGraph<d, Metric>::rebalance(size_t i, size_t j){
                         std::make_move_iterator(b.points.end()));
         // update the points of b
         b.points.erase(iter, b.points.end());
-        b.points.shrink_to_fit();
+        // b.points.shrink_to_fit();
         // update the radius of b
         b.update_radius();
     }
@@ -83,12 +92,14 @@ template <std::size_t d, typename Metric>
 inline std::pair<size_t, size_t> NeighborGraph<d, Metric>::init_new_cell(){
     // get the cell at the top of the cell heap
     size_t par = heap_top();
-    // extract its farthest point
-    Pt center = std::move(cells[par].pop_farthest());
     
-    // create new cell centered at this point
-    debug_log("add_cell: New center is " << center);
-    cells.push_back(Cell(std::move(center)));
+    // // extract its farthest point
+    // Pt center = std::move(cells[par].pop_farthest());
+    // // create new cell centered at this point
+    // debug_log("add_cell: New center is " << center);
+    // cells.push_back(Cell(std::move(center)));
+    cells.push_back(Cell(cells[par].farthest, global_points));
+    
     // add edge from new cell to itself
     size_t newcell_i = cells.size()-1;
     cells.back().nbrs.push_back(newcell_i);
@@ -106,7 +117,7 @@ inline void NeighborGraph<d, Metric>::point_location(size_t cell_i, size_t par_i
     // compute the radius of the new cell
     cells[cell_i].update_radius();
     // no other point from parent may have moved, but even then parent is to marked as affected
-    if(std::find(affected_cells.begin(), affected_cells.end(), par_i) != affected_cells.end())
+    if(std::find(affected_cells.begin(), affected_cells.end(), par_i) == affected_cells.end())
         affected_cells.push_back(par_i);
 }
 
@@ -130,6 +141,31 @@ inline void NeighborGraph<d, Metric>::nbr_nbr_update(size_t cell_i){
         add_edge(cell_i, i);
     }
 }
+
+// template <std::size_t d, typename Metric>
+// inline void NeighborGraph<d, Metric>::nbr_nbr_update(size_t cell_i){
+//     debug_log("nbr_nbr_update: Finding nbrs of nbrs");
+
+//     std::vector<size_t> nbrs;
+//     auto discovered = [&](const size_t i){
+//         // std::vector<size_t>& nbrs = cells[cell_i].nbrs;
+//         return (std::find(nbrs.begin(), nbrs.end(), i) != nbrs.end());
+//     };
+    
+//     // for nbrs of each affected nbr of parent, check if nbr of nbr is close enough
+//     for(size_t i: affected_cells)
+//         for(size_t j: cells[i].nbrs)
+//             if(is_close_enough(cell_i, j) && !discovered(j))
+//                 nbrs.push_back(j);
+    
+//     // for each viable nbr of nbr, connect it to the new cell
+//     debug_log("nbr_nbr_update: Nbrs discovered");
+//     cells[cell_i].nbrs.reserve(nbrs.size());
+//     for(size_t i: nbrs){
+//         debug_log("nbr_nbr_update: Adding edge between " << cells[i].center << " and " << cells[cell_i].center);
+//         add_edge(cell_i, i);
+//     }
+// }
 
 template <std::size_t d, typename Metric>
 inline void NeighborGraph<d, Metric>::prune_edges(){
@@ -200,13 +236,13 @@ std::vector<Point<d, Metric>> NeighborGraph<d, Metric>::get_permutation(bool mov
     // if centers are to be moved, move them
     if(move){
         for(auto&c: cells)
-            output.push_back(std::move(c.center));
+            output.push_back(global_points[c.center]);
         centers_moved = true;
     }
     // else push a copy
     else{
         for(auto&c: cells)
-            output.push_back(c.center);
+            output.push_back(global_points[c.center]);
     }
     return output;
 }

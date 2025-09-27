@@ -50,7 +50,8 @@ public:
     /**
      * @brief Pointer to the center point of the cell.
      */
-    Pt center;
+    // Pt center;
+    size_t center;
     /**
      * @brief Radius of the cell (distance from center to farthest point).
      */
@@ -58,13 +59,14 @@ public:
     /**
      * @brief Vector of pointers to points contained in the cell.
      */
-    std::vector<Pt> points;
+    // std::vector<Pt> points;
+    std::vector<size_t> points;
     /**
      * @brief Pointer to the farthest point from the center in the cell.
      */
     size_t farthest;
     std::vector<size_t> nbrs;
-
+    std::vector<Pt>& global_points;
     // /**
     //  * @brief Default constructor. Initializes an empty cell.
     //  */
@@ -73,12 +75,8 @@ public:
      * @brief Constructs a cell with a single point (by reference).
      * @param p Reference to the point to initialize the cell with.
      */
-    Cell(Pt p);
-    // /**
-    //  * @brief Constructs a cell with a single point (by pointer).
-    //  * @param p Pointer to the point to initialize the cell with.
-    //  */
-    // Cell(PtPtr p);
+    // Cell(Pt p);
+    Cell(size_t p_i, vector<Pt>& all_points);
     
     /**
      * @brief Computes the distance from the cell's center to a given point.
@@ -92,18 +90,11 @@ public:
      * @return Distance between centers.
      */
     double dist(const Cell& c) const;
+    double dist(size_t p_i) const;
 
     double compare_dist(Pt& p) const;
     double compare_dist(const Cell& c) const;
-
-    /**
-     * @brief Adds a point to the cell and updates radius/farthest as needed.
-     * @param p Pointer to the point to add.
-     */
-    // void add_point(PtPtr p);
-
-    // void extend_points(std::vector<PtPtr>& pts);
-    // void replace_points(std::vector<PtPtr>& pts);
+    double compare_dist(size_t p_i) const;
 
     /**
      * @brief Updates the cell's radius and farthest point.
@@ -121,7 +112,7 @@ public:
      */
     bool operator==(const Cell& other) const;
 
-    Pt pop_farthest();
+    // Pt pop_farthest();
 };
 
 /**

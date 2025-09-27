@@ -15,6 +15,7 @@
 #include <queue>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <boost/unordered/unordered_flat_set.hpp>
 
 /**
@@ -66,7 +67,7 @@ private:
     using HeapPair = std::pair<size_t, double>;
     
     std::vector<size_t> affected_cells;
-    boost::unordered_flat_set<size_t> nbrs;
+    std::vector<Pt> global_points;
     bool centers_moved;
     
     /**

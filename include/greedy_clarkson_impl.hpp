@@ -28,7 +28,7 @@ void clarkson(PtVec<d, Metric>& pts, vector<size_t>& pred){
         // add the next cell to the neighbor graph
         G.add_cell();
 
-        debug_log("Center of parent cell is at " << G.cells[cell_i].center << " and its farthest point is " << G.cells[cell_i].points[cells[cell_i].farthest]);
+        debug_log("Center of parent cell is at " << G.cells[cell_i].center << " and its farthest point is " << G.cells[cell_i].points[G.cells[cell_i].farthest]);
 
 #ifdef STAT
         vector<size_t> nbrs(G.cells.size(), -1);
@@ -42,7 +42,7 @@ void clarkson(PtVec<d, Metric>& pts, vector<size_t>& pred){
     }
     // extract the greedy permutation from the neighbor graph
     pts = std::move(G.get_permutation(true));
-    
+
     debug_log("Number of cells created: " << CellT::next_id - num_cells_exist);
 
 #ifdef STAT

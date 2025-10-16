@@ -1,6 +1,6 @@
 template<size_t d, typename Metric>
 BallTree<d, Metric>::BallTree(PtPtr& p)
-    : center(p), radius(0), _size(1), left(nullptr), right(nullptr) {}
+    : center(p), radius(0), size(1), left(nullptr), right(nullptr) {}
 
 template<size_t d, typename Metric>
 bool BallTree<d, Metric>::isleaf(){
@@ -20,48 +20,62 @@ BallHeap<d, Metric> BallTree<d, Metric>::heap(){
     return ball_heap;
 }
 
+template<size_t d, typename Metric>
+void BallTree<d, Metric>::get_traversal(vector<HeapOrderEntry>& output){
+    output.clear();
+    output.reserve(size);
+    output.push_back({*center, radius, 0, 0.0});
+    
+    std::unordered_map<Point<d,Metric>, size_t> index;
+    index[*center] = 0;
+    
+    auto to_traverse = heap();
+    while(!to_traverse.empty()){
+        auto top = to_traverse.top();
+        to_traverse.pop();
+        if(top->right){
+            index[*(top->right->center)] = output.size();
+            output.push_back({
+                *(top->right->center),    // center
+                top->right->radius,       // radius
+                index[*(top->center)],    // parent_index
+                top->left->radius         // left_radius
+            });
+
+            to_traverse.push((top->left).get());
+            to_traverse.push((top->right).get());
+        }
+    }
+}
+
+template<size_t d, typename Metric>
+void BallTree<d, Metric>::get_traversal(vector<BallTreePtr>& output){
+    output.clear();
+
+    auto to_traverse = heap();
+    while(!to_traverse.empty()){
+        auto top = to_traverse.top();
+        to_traverse.pop();
+        output.push_back(top);
+        if(!top->leaf()){
+            to_traverse.push((top->left).get());
+            to_traverse.push((top->right).get());
+        }
+    }
+}
 
 template<size_t d, typename Metric>
 BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts){
     // Construct the tree topology
-    auto root = _construct_tree(pts);
+    auto root = construct_tree(pts);
     // Compute radii for each node
-    _compute_radii(root.get());
+    compute_radii(root.get());
 
     return std::move(root);
 }
 
-// template<size_t d, typename Metric>
-// BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
-// {
-//     using PtPtr = const Point<d, Metric>*;
-//     using BallTreePtr = BallTree<d, Metric>*;
-    
-//     vector<PtPtr> pred;
-//     clarkson(pts, pred);
-    
-//     PtPtr root_pt = &pts[0];
-//     auto root = std::make_unique<BallTree<d, Metric>>(root_pt);
-    
-//     unordered_map<PtPtr, BallTreePtr> leaf;
-//     leaf[&pts[0]] = root.get();
-
-//     for(auto i = 1; i < pts.size(); i++){
-//         auto node = leaf[pred[i]];
-//         PtPtr right_pt = &pts[i];
-        
-//         node->left = std::make_unique<BallTree<d, Metric>>(pred[i]);
-//         node->right = std::make_unique<BallTree<d, Metric>>(right_pt);
-        
-//         leaf[pred[i]] = (node->left).get();
-//         leaf[right_pt] = (node->right).get();
-//     }
-
-//     return std::move(root);
-// }
-
 template<size_t d, typename Metric>
-BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
+BallTreeUPtr<d, Metric> construct_tree(PtVec<d, Metric>& pts)
 {
     using PtPtr = const Point<d, Metric>*;
     using BallTreePtr = BallTree<d, Metric>*;
@@ -93,7 +107,7 @@ BallTreeUPtr<d, Metric> _construct_tree(PtVec<d, Metric>& pts)
 // This method computes 2-approximate radii in linear time.
 // Computing exact radius requires finding the point farthest from the center for each node.
 template <size_t d, typename Metric>
-void _compute_radii(BallTree<d, Metric>* root) {
+void compute_radii(BallTree<d, Metric>* root) {
     using BallTreePtr = BallTree<d, Metric>*;
 
     std::stack<std::pair<BallTreePtr, bool>> stk;
@@ -112,7 +126,7 @@ void _compute_radii(BallTree<d, Metric>* root) {
                 node->left->radius,
                 node->dist(node->right->center) + node->right->radius
             );
-            node->_size = node->left->_size + node->right->_size;
+            node->size = node->left->size + node->right->size;
         }
         else {
             // Mark node for second visit after children
@@ -125,82 +139,93 @@ void _compute_radii(BallTree<d, Metric>* root) {
 
 template <size_t d, typename Metric>
 const Point<d, Metric>* BallTree<d, Metric>::nearest(PtPtr query){
-    auto viable = heap();
-    const Point<d, Metric>* nearest = nullptr;
+    PtPtr nearest = nullptr;
     double nn_dist = std::numeric_limits<double>::max();
     
     auto is_viable = [&](BallTree<d, Metric>* node){
         return node->dist(query) - node->radius < nn_dist;
     };
-    
-    while(!viable.empty()){
-        auto top = viable.top();
+
+    auto update = [&](BallTree<d, Metric>* top){
         double top_dist = top->dist(query);
         if(top_dist < nn_dist){
             nearest = top->center;
             nn_dist = top_dist;
         }
-        viable.pop();
-        if(top->left && is_viable((top->left).get()))
-            viable.push((top->left).get());
-        if(top->right && is_viable((top->right).get()))
-            viable.push((top->right).get());
-    }
+    };
+    
+    generic_search(update, is_viable);
     return nearest;
 }
 
 template <size_t d, typename Metric>
 const Point<d, Metric>* BallTree<d, Metric>::farthest(PtPtr query){
-    auto viable = heap();
-    const Point<d, Metric>* farthest = nullptr;
+    PtPtr farthest = nullptr;
     double fn_dist = 0.0;
     
-    auto is_viable = [&](BallTree<d, Metric>* node){
+    auto is_viable = [&](BallTreePtr node){
         return node->dist(query) + node->radius > fn_dist;
     };
-    
-    while(!viable.empty()){
-        auto top = viable.top();
+
+    auto update = [&](BallTreePtr top){
         double top_dist = top->dist(query);
         if(top_dist > fn_dist){
             farthest = top->center;
             fn_dist = top_dist;
         }
+    };
+   
+    generic_search(update, is_viable);
+    return farthest;
+}
+
+template <size_t d, typename Metric>
+vector<BallTree<d, Metric>*> BallTree<d, Metric>::range(PtPtr query, double q_radius){
+    vector<BallTreePtr> output;
+    
+    auto is_viable = [&](BallTreePtr node){
+        double q_dist = node->dist(query);
+        return (q_dist + node->radius > q_radius) &&
+                    (q_dist - node->radius <= q_radius);
+    };
+    
+    auto update = [&](BallTreePtr top){
+        if(top->dist(query) + top->radius <= q_radius)
+            output.push_back(top);
+    };
+
+    generic_search(update, is_viable);
+    return output;
+}
+
+template <size_t d, typename Metric>
+template<typename Update, typename ViableCondition>
+void BallTree<d, Metric>::generic_search(Update update, ViableCondition is_viable){
+    auto viable = heap();
+    while(!viable.empty()){
+        auto top = viable.top();
+        update(top);
         viable.pop();
         if(top->left && is_viable((top->left).get()))
             viable.push((top->left).get());
         if(top->right && is_viable((top->right).get()))
             viable.push((top->right).get());
     }
-    return farthest;
 }
 
 template <size_t d, typename Metric>
-vector<BallTree<d, Metric>*> BallTree<d, Metric>::range(PtPtr query, double q_radius){
-    using BallTreePtr = BallTree<d, Metric>*;
-
-    auto viable = heap();
-    vector<BallTreePtr> output;
-    
-    auto is_viable = [&](BallTreePtr node){
-        return node->dist(query) - node->radius <= q_radius;
-    };
-    
-    while(!viable.empty()){
-        auto top = viable.top();
-        double top_dist = top->dist(query);
-        viable.pop();
-        
-        if(top_dist + top->radius <= q_radius){
-            output.push_back(top);
-            continue;
+vector<const Point<d, Metric>*> BallTree<d, Metric>::points(){
+    deque<BallTree*> to_traverse({this});
+    vector<PtPtr> output;
+    while(!to_traverse.empty()){
+        BallTree* curr = to_traverse[0];
+        to_traverse.pop_front();
+        if(curr->isleaf())
+            output.push_back(curr->center);
+        else{
+            to_traverse.push_back((curr->left).get());
+            to_traverse.push_back((curr->right).get());
         }
-        
-        if(top->left && is_viable((top->left).get()))
-            viable.push((top->left).get());
-        
-        if(top->right && is_viable((top->right).get()))
-            viable.push((top->right).get());
     }
     return output;
 }

@@ -12,6 +12,9 @@
 
 #include "greedy.hpp"
 #include <stack>
+#include <unordered_map>
+#include <deque>
+#include <boost/unordered/unordered_flat_set.hpp>
 
 /**
  * @brief BallTree node for hierarchical spatial partitioning.
@@ -48,6 +51,7 @@ public:
      * @brief Unique pointer to a BallTree node.
      */
     using BallTreeUPtr = std::unique_ptr<BallTree<d, Metric>>;
+    using BallTreePtr = BallTree<d, Metric>*;
     /**
      * @brief Max-heap of BallTree pointers, ordered by radius.
      */
@@ -68,7 +72,7 @@ public:
     /**
      * @brief Number of points contained in this ball.
      */
-    size_t _size;
+    size_t size;
     /**
      * @brief Left child (sub-ball) in the tree.
      */
@@ -100,9 +104,24 @@ public:
      */
     BallHeap heap();
 
+    vector<PtPtr> points();
+
     PtPtr nearest(PtPtr query);
     PtPtr farthest(PtPtr query);
     vector<BallTree*> range(PtPtr query, double q_radius);
+    
+    template<typename Update, typename ViableCondition>
+    void generic_search(Update update, ViableCondition is_viable);
+
+    struct HeapOrderEntry{
+        Point<d, Metric> center;
+        double radius;
+        size_t parent_index;
+        double left_radius;
+    };
+
+    void get_traversal(vector<HeapOrderEntry>& output);
+    void get_traversal(vector<BallTreePtr>& output);
 };
 
 /**

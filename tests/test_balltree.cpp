@@ -10,7 +10,7 @@ TEST(BallTreeTest, LeafInitialization) {
     BallTree<3, L2Metric> tree(ptr);
 
     EXPECT_TRUE(tree.isleaf());
-    EXPECT_EQ(tree._size, 1);
+    EXPECT_EQ(tree.size, 1);
     EXPECT_DOUBLE_EQ(tree.radius, 0.0);
 }
 

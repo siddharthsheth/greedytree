@@ -6,7 +6,7 @@
 
 template<size_t d, typename Metric>
 struct ViableNode{
-    Point<d, Metric> center;
+    std::array<double, d> center;
     double radius;
     vector<size_t> nbrs;
     bool finished;
@@ -17,7 +17,10 @@ void all_range(vector<typename BallTree<d, Metric>::HeapOrderEntry>& g_a,
             vector<typename BallTree<d, Metric>::HeapOrderEntry>& g_b,
             double query_radius,
             std::vector<std::vector<size_t>>& output){
-            // std::unordered_map<Point<d, Metric>, std::vector<size_t>>& output){
+            // std::unordered_map<std::array<double, d>, std::vector<size_t>>& output){
+    
+    using NbrPair = std::pair<size_t, double>;
+
     auto a_it = g_a.begin();
     auto b_it = g_b.begin();
 
@@ -26,66 +29,86 @@ void all_range(vector<typename BallTree<d, Metric>::HeapOrderEntry>& g_a,
     
     double a_r = a_it->radius, b_r = b_it->radius;
 
-    std::vector<ViableNode<d, Metric>> a_nodes, b_nodes;
-    a_nodes.reserve(g_a.size());
-    b_nodes.reserve(g_b.size());
-    a_nodes.push_back({a_it->center, a_it->radius, vector<size_t>({0}), false});
-    b_nodes.push_back({b_it->center, b_it->radius, vector<size_t>({0}), false});
-    
-    // std::cout << "Size of one node in vector is " << sizeof(a_nodes[0]) << " bytes." << std::endl;
-    // std::cout << "Center is at " << &(a_nodes[0].center) << std::endl;
-    // std::cout << "Center first coord is at " << &(a_nodes[0].center[0]) << std::endl;
-    // std::cout << "Center second coord is at " << &(a_nodes[0].center[1]) << std::endl;
-    // std::cout << "Radius is at " << &(a_nodes[0].radius) << std::endl;
-    // std::cout << "Neighbors are at " << &(a_nodes[0].nbrs) << std::endl;
-    // std::cout << "Neighbor entry is at " << &(a_nodes[0].nbrs[0]) << std::endl;
-    // std::cout << "Size of one double is " << sizeof(a_r) << " bytes." << std::endl;
-    // std::cout << "Bool is at " << &(a_nodes[0].finished) << std::endl;
+    std::vector<double> a_radii, b_radii;
+    std::vector<std::array<double, d>> a_centers, b_centers;
+    std::vector<std::vector<NbrPair>> a_nbrs, b_nbrs;
+    std::vector<bool> finished;
 
+    auto insert_node = [&](bool push_a,
+                            std::array<double, d> center,
+                            double radius,
+                            std::vector<NbrPair> nbrpairs,
+                            bool par_fin
+                        ){
+        if(push_a){
+            a_centers.push_back(center);
+            a_radii.push_back(radius);
+            a_nbrs.push_back(std::move(nbrpairs));
+            finished.push_back(par_fin);
+        } else {
+            b_centers.push_back(center);
+            b_radii.push_back(radius);
+            b_nbrs.push_back(std::move(nbrpairs));
+        }
+    };
+
+    double center_dist = (a_it->center).dist(b_it->center);
+    a_centers.reserve(g_a.size());
+    a_radii.reserve(g_a.size());
+    a_nbrs.reserve(g_a.size());
+    finished.reserve(g_a.size());
+    insert_node(true,
+                    a_it->center,
+                    a_it->radius,
+                    vector<NbrPair>({{0, center_dist}}),
+                    false
+                );
+    
+    b_centers.reserve(g_b.size());
+    b_radii.reserve(g_b.size());
+    b_nbrs.reserve(g_b.size());
+    insert_node(false,
+                    b_it->center,
+                    b_it->radius,
+                    vector<NbrPair>({{0, center_dist}}),
+                    false
+                );
+    
     a_it++;
     b_it++;
 
     auto prune = [&](const size_t i){
-        ViableNode<d,Metric>& a = a_nodes[i];
-        auto iter = std::remove_if(a_nodes[i].nbrs.begin(), a_nodes[i].nbrs.end(), [&](const size_t i){
-            ViableNode<d,Metric>& b = b_nodes[i];
-            if(a.center.dist(b.center) > query_radius + a.radius + b.radius)
-                debug_log("prune: Removing edge between " << a.center << " and " << b.center << " because " << a.center.dist(b.center) << ">" << query_radius + a.radius + b.radius);
+        auto iter = std::remove_if(a_nbrs[i].begin(), a_nbrs[i].end(), [&](const NbrPair nbr){
+            auto [j, ctr_dist] = nbr;
+            if(ctr_dist > query_radius + a_radii[i] + b_radii[j])
+                debug_log("prune: Removing edge between " << a_centers[i] << " and " << b_centers[j] << " because " << ctr_dist << ">" << query_radius + a_radii[i] + b_radii[j]);
             else
-                debug_log("prune: Keeping edge between " << a.center << " and " << b.center << " because " << a.center.dist(b.center) << "<=" << query_radius + a.radius + b.radius);
-            return a.center.dist(b.center) > query_radius + a.radius + b.radius;
+                debug_log("prune: Keeping edge between " << a_centers[i] << " and " << b_centers[j] << " because " << ctr_dist << "<=" << query_radius + a_radii[i] + b_radii[j]);
+            return ctr_dist > query_radius + a_radii[i] + b_radii[j];
         });
-        a_nodes[i].nbrs.erase(iter, a_nodes[i].nbrs.end());
+        a_nbrs[i].erase(iter, a_nbrs[i].end());
     };
 
-    // auto prune = [&](const size_t i){
-    //     ViableNode<d,Metric>& a = a_nodes[i];
-    //     auto iter = std::remove_if(a_nodes[i].nbrs.begin(), a_nodes[i].nbrs.end(), [&](const size_t i){
-    //         ViableNode<d,Metric>& b = b_nodes[i];
-    //         return a.center.dist(b.center) > query_radius + a.radius + b.radius;
-    //     });
-    //     a_nodes[i].nbrs.erase(iter, a_nodes[i].nbrs.end());
-    // };
-
     auto prune_b = [&](const size_t i){
-        ViableNode<d,Metric>& b = b_nodes[i];
-        auto iter = std::remove_if(b_nodes[i].nbrs.begin(), b_nodes[i].nbrs.end(), [&](const size_t i){
-            ViableNode<d,Metric>& a = a_nodes[i];
-            if(a.center.dist(b.center) > query_radius + a.radius + b.radius)
-                debug_log("b_prune: Removing edge between " << a.center << " and " << b.center << " because " << a.center.dist(b.center) << ">" << query_radius + a.radius + b.radius);
+        auto iter = std::remove_if(b_nbrs[i].begin(), b_nbrs[i].end(), [&](const NbrPair nbr){
+            auto [j, ctr_dist] = nbr;
+            if(ctr_dist > query_radius + a_radii[j] + b_radii[i])
+                debug_log("b_prune: Removing edge between " << a_centers[j] << " and " << b_centers[i] << " because " << ctr_dist << ">" << query_radius + a_radii[j] + b_radii[i]);
             else
-                debug_log("b_prune: Keeping edge between " << a.center << " and " << b.center << " because " << a.center.dist(b.center) << "<=" << query_radius + a.radius + b.radius);
-            return a.center.dist(b.center) > query_radius + a.radius + b.radius;
+                debug_log("b_prune: Keeping edge between " << a_centers[j] << " and " << b_centers[i] << " because " << ctr_dist << "<=" << query_radius + a_radii[j] + b_radii[i]);
+            return ctr_dist > query_radius + a_radii[j] + b_radii[i];
         });
-        b_nodes[i].nbrs.erase(iter, b_nodes[i].nbrs.end());
+        b_nbrs[i].erase(iter, b_nbrs[i].end());
     };
 
     auto finish = [&](const size_t i){
-        ViableNode<d,Metric>& a = a_nodes[i];
         // if a.nbrs.size() == 0 or rmax <= (self.e / 4) * self.r:
-        if(a.nbrs.size() == 0 or a.radius == 0){
-            debug_log("finish: Finishing node " << a.center);
-            a_nodes[i].finished = true;
+        if(all_of(a_nbrs[i].begin(), a_nbrs[i].end(), [&](const NbrPair nbr){
+            auto [j, ctr_dist] = nbr;
+            return ctr_dist <= query_radius - a_radii[i] - b_radii[j];
+        })){
+            debug_log("finish: Finishing node " << a_centers[i]);
+            finished[i] = true;
         }
     };
 
@@ -99,59 +122,74 @@ void all_range(vector<typename BallTree<d, Metric>::HeapOrderEntry>& g_a,
             debug_log("split: Iteration " << i++ << " splitting b because " << a_r << "<" << b_r);
         }
 
-        std::vector<ViableNode<d, Metric>>& nodes = (split_a ? a_nodes : b_nodes);
-        std::vector<ViableNode<d, Metric>>& other = (split_a ? b_nodes : a_nodes);
         vector<typename BallTree<d, Metric>::HeapOrderEntry>& g = split_a ? g_a : g_b;
         auto it = (split_a ? a_it : b_it);
         double& r = (split_a ? a_r : b_r);
-        ViableNode<d, Metric>& parent = nodes[it->parent_index];
-        
-        vector<size_t>& parent_nbrs = parent.nbrs;
-        bool& parent_finished = parent.finished;
+        size_t par_i = it->parent_index;
 
-        debug_log("Parent is " << parent.center << " with radius " << parent.radius);
+        std::vector<std::array<double, d>>& centers = (split_a ? a_centers : b_centers);
+        std::vector<std::array<double, d>>& other_centers = (split_a ? b_centers : a_centers);
+        std::vector<double>& radii = (split_a ? a_radii : b_radii);
+        std::vector<std::vector<NbrPair>>& nbrs = (split_a ? a_nbrs : b_nbrs);
+        std::vector<std::vector<NbrPair>>& other_nbrs = (split_a ? b_nbrs : a_nbrs);
+
+        vector<NbrPair>& parent_nbrs = nbrs[par_i];
+        bool parent_fin = (split_a ? finished[par_i] : false);
+
+        if(!split_a)
+            prune_b(par_i);
+        
+        debug_log("Parent is " << centers[par_i] << " with radius " << radii[par_i]);
         affected.clear();
+        size_t new_index = centers.size();
 
         if (split_a) {
-            if (!parent_finished)
-                affected = { it->parent_index, nodes.size() };
+            if (!finished[par_i])
+                affected = { par_i, new_index};
         } else {
-            std::copy(
-                parent_nbrs.begin(),
-                parent_nbrs.end(),
-                std::back_inserter(affected)
-            );
+            // affected.reserve(parent_nbrs.size());
+            for(auto [i, par_dist]: parent_nbrs)
+                if(!finished[i])
+                    affected.push_back(i);
         }
         debug_log("There are " << affected.size() << " affected nodes.");
         debug_log("The parent has " << parent_nbrs.size() << " nbrs.");
 
         // add new node to viability graph
-        nodes.push_back({it->center, it->radius, parent_nbrs, parent_finished});
+        std::vector<NbrPair> new_nbrs;
+        new_nbrs.reserve(parent_nbrs.size());
+        for(auto& [i, par_dist]: parent_nbrs){
+            double ctr_dist = (it->center).dist(other_centers[i]);
+            new_nbrs.push_back({i, ctr_dist});
+            other_nbrs[i].push_back({new_index, ctr_dist});
+        }
+        insert_node(split_a, it->center, it->radius, new_nbrs, parent_fin);
+        // nodes.push_back({it->center, it->radius, parent_nbrs, parent_fin});
         
         // debug_log("Now the parent has " << nodes[it->parent_index].nbrs.size() << " nbrs.");
 
-        auto& new_node = nodes.back();
-        if(split_a){
-            debug_log("all_range: Added a node: " <<  new_node.center << " with radius " << new_node.radius << " and " << new_node.nbrs.size() << " nbrs.");
-        } else {
-            debug_log("all_range: Added b node: " <<  new_node.center << " with radius " << new_node.radius << " and " << new_node.nbrs.size() << " nbrs.");
-        }
+        // auto& new_node = nodes.back();
+        // if(split_a){
+        //     debug_log("all_range: Added a node: " <<  new_node.center << " with radius " << new_node.radius << " and " << new_node.nbrs.size() << " nbrs.");
+        // } else {
+        //     debug_log("all_range: Added b node: " <<  new_node.center << " with radius " << new_node.radius << " and " << new_node.nbrs.size() << " nbrs.");
+        // }
 
         // update radius of parent node
-        nodes[it->parent_index].radius = it->left_radius;
+        // nodes[it->parent_index].radius = it->left_radius;
+        radii[par_i] = it->left_radius;
 
         // if split node is b, update its list of neighbors
-        size_t new_idx = nodes.size()-1;
-        if(!split_a){
-            prune_b(b_it->parent_index);
-            prune_b(new_idx);
-        }
+        // if(!split_a){
+        //     prune_b(par_i);
+        //     prune_b(new_index);
+        // }
         
         // add new node as neighbor of its parents neighbors
-        for(auto& i: nodes[new_idx].nbrs){
-            debug_log("all_range: Updating " << it->center << " as neighbor of " << other[i].center);
-            other[i].nbrs.push_back(new_idx);
-        }
+        // for(auto& i: nbrs[new_index]){
+        //     // debug_log("all_range: Updating " << it->center << " as neighbor of " << other[i].center);
+        //     other_nbrs[i].push_back({new_index, centers[new_index].dist(other_centers[i])});
+        // }
         
         for(size_t i: affected){
             // absorb();
@@ -161,34 +199,43 @@ void all_range(vector<typename BallTree<d, Metric>::HeapOrderEntry>& g_a,
 
         // update splitting radius
         it++;
-        if(it != g.end()){
-            if(split_a)
-                debug_log("Updating r_a to radius of " << nodes[it->parent_index].center << " which is " << nodes[it->parent_index].radius);
-            else
-                debug_log("Updating r_b to radius of " << nodes[it->parent_index].center << " which is " << nodes[it->parent_index].radius);
-        }
-        r = (it != g.end())? nodes[it->parent_index].radius : -1;
+        // if(it != g.end()){
+        //     if(split_a)
+        //         debug_log("Updating r_a to radius of " << nodes[it->parent_index].center << " which is " << nodes[it->parent_index].radius);
+        //     else
+        //         debug_log("Updating r_b to radius of " << nodes[it->parent_index].center << " which is " << nodes[it->parent_index].radius);
+        // }
+        r = (it != g.end())? radii[it->parent_index] : -1;
         
         if (split_a) a_it = it;
         else b_it = it;
     }
 
+    // output = std::move(a_nbrs);
     output.clear();
-    output.reserve(a_nodes.size());
-    for(auto& node: a_nodes)
-        output.push_back(std::move(node.nbrs));
+    output.reserve(a_nbrs.size());
+    // for(auto& nbrs: a_nbrs)
+    //     output.push_back(std::move(nbrs));
         // output[node.center] = std::move(node.nbrs);
+    for (auto& nbrs: a_nbrs){
+        output.push_back({});
+        output.back().reserve(nbrs.size());
+        for(auto [i, dis]: nbrs)
+            output.back().push_back(i);
+    }
+
 };
 
 template<size_t d, typename Metric>
-void all_range_naive(vector<Point<d, Metric>>& points_a,
-            vector<Point<d, Metric>>& points_b,
+void all_range_naive(vector<std::array<double, d>>& points_a,
+            vector<std::array<double, d>>& points_b,
             double query_radius,
-            unordered_map<Point<d,Metric>, vector<Point<d,Metric>>>& output){
+            Metric metric,
+            unordered_map<std::array<double, d>, vector<std::array<double, d>>>& output){
     output.clear();
     for(auto& p: points_a)
         for(auto& q: points_b)
-            if(p.dist(q) <= query_radius)
+            if(metric.dist(p, q) <= query_radius)
                 output[p].push_back(q);
 }
 /*

@@ -12,7 +12,7 @@
 #include <cmath>
 
 // Forward declaration of Point class template.
-template <std::size_t d, typename Metric> class Point;
+// template <std::size_t d, typename Metric> class Point;
 
 /**
  * @brief L2 (Euclidean) metric for norm and distance calculations.
@@ -27,7 +27,7 @@ struct L2Metric {
      * @return The L2 norm of the point.
      */
     template <std::size_t d>
-    static double compare_dist(const Point<d, L2Metric>& a, const Point<d, L2Metric>& b) {
+    static double compare_dist(const std::array<double, d>& a, const std::array<double, d>& b) {
         double sum = 0.0;
         for (std::size_t i = 0; i < d; ++i) {
             double diff = a[i] - b[i];
@@ -44,7 +44,7 @@ struct L2Metric {
      * @return The L2 distance between a and b.
      */
     template <std::size_t d>
-    static double dist(const Point<d, L2Metric>& a, const Point<d, L2Metric>& b) {
+    static double dist(const std::array<double, d>& a, const std::array<double, d>& b) {
         double sum = 0.0;
         for (std::size_t i = 0; i < d; ++i) {
             double diff = a[i] - b[i];
@@ -67,7 +67,7 @@ struct L1Metric {
      * @return The L1 norm of the point.
      */
     template <std::size_t d>
-    static double compare_dist(const Point<d, L1Metric>& a, const Point<d, L1Metric>& b) {
+    static double compare_dist(const std::array<double, d>& a, const std::array<double, d>& b) {
         double sum = 0.0;
         for (std::size_t i = 0; i < d; ++i)
             sum += std::abs(a[i] - b[i]);
@@ -82,7 +82,7 @@ struct L1Metric {
      * @return The L1 distance between a and b.
      */
     template <std::size_t d>
-    static double dist(const Point<d, L1Metric>& a, const Point<d, L1Metric>& b) {
+    static double dist(const std::array<double, d>& a, const std::array<double, d>& b) {
         double sum = 0.0;
         for (std::size_t i = 0; i < d; ++i)
             sum += std::abs(a[i] - b[i]);

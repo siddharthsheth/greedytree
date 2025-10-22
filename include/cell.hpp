@@ -31,12 +31,7 @@ public:
     /**
      * @brief Alias for a constant Point in d dimensions with the given Metric.
      */
-    using Pt = Point<d, Metric>;
-    /**
-     * @brief Alias for a pointer to a constant Point.
-     */
-    using PtPtr = Point<d, Metric>*;
-    using CellPtr = Cell<d, Metric>*;
+    using Pt = std::array<double, d>;
     
     /**
      * @brief Static counter for assigning unique IDs to cells.
@@ -62,8 +57,9 @@ public:
     /**
      * @brief Pointer to the farthest point from the center in the cell.
      */
-    size_t farthest;
     std::vector<size_t> nbrs;
+    std::vector<double> distances;
+    Metric metric;
 
     // /**
     //  * @brief Default constructor. Initializes an empty cell.
@@ -73,7 +69,7 @@ public:
      * @brief Constructs a cell with a single point (by reference).
      * @param p Reference to the point to initialize the cell with.
      */
-    Cell(Pt p);
+    Cell(Pt&& p, Metric metric);
     // /**
     //  * @brief Constructs a cell with a single point (by pointer).
     //  * @param p Pointer to the point to initialize the cell with.
@@ -85,16 +81,16 @@ public:
      * @param p Reference to the point.
      * @return Distance from center to point.
      */
-    double dist(Pt& p) const;
+    // double dist(Pt& p) const;
     /**
      * @brief Computes the distance between the centers of two cells.
      * @param c Reference to the other cell.
      * @return Distance between centers.
      */
-    double dist(const Cell& c) const;
+    // double dist(const Cell& c) const;
 
-    double compare_dist(Pt& p) const;
-    double compare_dist(const Cell& c) const;
+    // double compare_dist(Pt& p) const;
+    // double compare_dist(const Cell& c) const;
 
     /**
      * @brief Adds a point to the cell and updates radius/farthest as needed.
@@ -124,21 +120,21 @@ public:
     Pt pop_farthest();
 };
 
-/**
- * @brief Hash function specialization for Cell, for use in unordered containers.
- * @tparam d Dimensionality.
- * @tparam Metric Metric type.
- */
-template<size_t d, typename Metric>
-struct std::hash<Cell<d, Metric>> {
-    size_t operator()(const Cell<d, Metric>& c) const;
-};
+// /**
+//  * @brief Hash function specialization for Cell, for use in unordered containers.
+//  * @tparam d Dimensionality.
+//  * @tparam Metric Metric type.
+//  */
+// template<size_t d, typename Metric>
+// struct std::hash<Cell<d, Metric>> {
+//     size_t operator()(const Cell<d, Metric>& c) const;
+// };
 
-/**
- * @brief Type alias for Cell hash function.
- */
-template<size_t d, typename Metric>
-using CellHash = std::hash<Cell<d, Metric>>;
+// /**
+//  * @brief Type alias for Cell hash function.
+//  */
+// template<size_t d, typename Metric>
+// using CellHash = std::hash<Cell<d, Metric>>;
 
 #include "cell_impl.hpp"
 

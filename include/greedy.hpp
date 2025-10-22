@@ -14,11 +14,11 @@
 #include "utils.hpp"
 #include <vector>
 
-template <std::size_t d, typename Metric>
-using PtVec = std::vector<Point<d, Metric>>;
+template <std::size_t d>
+using PtVec = std::vector<std::array<double, d>>;
 
-template <std::size_t d, typename Metric>
-using PtPtrVec = std::vector<const Point<d, Metric>*>;
+template <std::size_t d>
+using PtPtrVec = std::vector<const std::array<double, d>*>;
 
 /**
  * @brief Perform Gonzalez's greedy k-center clustering algorithm.
@@ -35,7 +35,7 @@ using PtPtrVec = std::vector<const Point<d, Metric>*>;
 // template <std::size_t d, typename Metric>
 // void gonzalez(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
 template <std::size_t d, typename Metric>
-void gonzalez(PtVec<d, Metric>& pts, vector<size_t>& pred);
+void gonzalez(PtVec<d>& pts, vector<size_t>& pred, Metric metric);
 
 /**
  * @brief Perform Clarkson's greedy clustering algorithm.
@@ -51,7 +51,7 @@ void gonzalez(PtVec<d, Metric>& pts, vector<size_t>& pred);
 // template <std::size_t d, typename Metric>
 // void clarkson(PtVec<d, Metric>& pts, PtPtrVec<d, Metric>& pred);
 template <std::size_t d, typename Metric>
-void clarkson(PtVec<d, Metric>& pts, vector<size_t>& pred);
+void clarkson(PtVec<d>& pts, vector<size_t>& pred, Metric metric);
 
 #include "greedy_gonzalez_impl.hpp"
 #include "greedy_clarkson_impl.hpp"

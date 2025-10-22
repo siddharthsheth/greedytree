@@ -3,11 +3,12 @@
 #include "../include/balltree.hpp"
 
 TEST(BallTreeTest, LeafInitialization) {
-    using MyPoint = Point<3, L2Metric>;
+    using MyPoint = std::array<double, 3>;
+    L2Metric metric;
 
-    MyPoint pt(std::initializer_list<double>{1.0, 2.0, 3.0});
+    MyPoint pt({1.0, 2.0, 3.0});
     const MyPoint *ptr = &pt;
-    BallTree<3, L2Metric> tree(ptr);
+    BallTree<3, L2Metric> tree(ptr, metric);
 
     EXPECT_TRUE(tree.isleaf());
     EXPECT_EQ(tree.size, 1);
@@ -28,9 +29,10 @@ TEST(BallTreeTest, LeafInitialization) {
 // }
 
 TEST(BallTreeTest, NearestNeighbor) {
-    using PlanarPoint = Point<2, L1Metric>;
+    using PlanarPoint = std::array<double, 2>;
     using PlanarBallTreePtr = std::unique_ptr<BallTree<2, L1Metric>>;
-    
+    L1Metric metric;
+
     vector<PlanarPoint> pts;
     pts.push_back(PlanarPoint({0, 0}));
     pts.push_back(PlanarPoint({1, 2}));
@@ -38,7 +40,7 @@ TEST(BallTreeTest, NearestNeighbor) {
     pts.push_back(PlanarPoint({15, 0}));
     pts.push_back(PlanarPoint({8, 5}));
 
-    PlanarBallTreePtr tree = greedy_tree(pts);
+    PlanarBallTreePtr tree = greedy_tree(pts, metric);
     
     PlanarPoint query({15,7});
     const PlanarPoint* nn = tree->nearest(&query);
@@ -47,9 +49,10 @@ TEST(BallTreeTest, NearestNeighbor) {
 }
 
 TEST(BallTreeTest, FarthestNeighbor) {
-    using PlanarPoint = Point<2, L1Metric>;
+    using PlanarPoint = std::array<double, 2>;
     using PlanarBallTreePtr = std::unique_ptr<BallTree<2, L1Metric>>;
-    
+    L1Metric metric;
+
     vector<PlanarPoint> pts;
     pts.push_back(PlanarPoint({0, 0}));
     pts.push_back(PlanarPoint({1, 2}));
@@ -57,7 +60,7 @@ TEST(BallTreeTest, FarthestNeighbor) {
     pts.push_back(PlanarPoint({15, 0}));
     pts.push_back(PlanarPoint({8, 5}));
 
-    PlanarBallTreePtr tree = greedy_tree(pts);
+    PlanarBallTreePtr tree = greedy_tree(pts, metric);
     
     PlanarPoint query({15,7});
     const PlanarPoint* fn = tree->farthest(&query);

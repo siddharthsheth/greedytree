@@ -16,6 +16,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <iterator>
 #include <boost/unordered/unordered_flat_set.hpp>
 
 /**
@@ -32,7 +33,7 @@ private:
     /**
      * @brief Point type in d-dimensional space.
      */
-    using Pt = Point<d, Metric>;
+    using Pt = std::array<double, d>;
     /**
      * @brief Reference to a Cell.
      */
@@ -51,23 +52,27 @@ public:
      * @brief Construct a NeighborGraph from a vector of points.
      * @param P Vector of points to initialize the graph.
      */
-    NeighborGraph(std::vector<Pt>& pts);
+    NeighborGraph(std::vector<Pt>& pts, Metric metric);
     
     /**
      * @brief Add a new cell to the graph.
      */
     void add_cell();
     
-    std::vector<Pt> get_permutation(bool move);
+    void get_permutation(bool move, std::vector<Pt>& output);
     
 private:
     /**
      * @brief Pair of unique_ptr to Cell and a double (for heap operations).
      */
     using HeapPair = std::pair<size_t, double>;
+    Metric metric;
     
     std::vector<size_t> affected_cells;
-    std::vector<Pt> global_points;
+    std::vector<double> a_distances;
+    std::vector<Pt> move_pts, keep_pts;
+    std::vector<double> move_dists, keep_dists;
+    std::vector<size_t> move_idx, keep_idx;
     bool centers_moved;
     
     /**
@@ -115,12 +120,13 @@ private:
         double j_r = cells[j].radius;
         double min_r = min(i_r, j_r);
         double max_r = max(i_r, j_r);
-        return min_r > 0 && cells[i].dist(cells[j]) <= i_r + j_r + max_r;
+        return min_r > 0 && metric.dist(cells[i].center, cells[j].center) <= i_r + j_r + max_r;
+        // return min_r > 0 && cells[i].dist(cells[j]) <= i_r + j_r + max_r;
         // return cells[i].dist(cells[j]) <= i_r + j_r + max_r;
     }
 
     inline bool is_close_enough(const size_t i, const size_t j, double r) const{
-        return cells[i].dist(cells[j]) <= 3*r;
+        return metric.dist(cells[i].center, cells[j].center) <= 3*r;
     }
 
     inline std::pair<size_t, size_t> init_new_cell();

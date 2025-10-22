@@ -43,10 +43,11 @@ public:
         }
     };
 
+    using Pt = std::array<double, d>;
     /**
      * @brief Pointer to a Point in d-dimensional space.
      */
-    using PtPtr = const Point<d, Metric>*;
+    using PtPtr = const Pt*;
     /**
      * @brief Unique pointer to a BallTree node.
      */
@@ -82,11 +83,13 @@ public:
      */
     BallTreeUPtr right;
 
+    Metric metric;
+
     /**
      * @brief Construct a BallTree node with a given center point.
      * @param p Pointer to the center point.
      */
-    BallTree(PtPtr& p);
+    BallTree(PtPtr& p, Metric metric);
     /**
      * @brief Check if this node is a leaf (no children).
      * @return True if leaf node, false otherwise.
@@ -114,7 +117,7 @@ public:
     void generic_search(Update update, ViableCondition is_viable);
 
     struct HeapOrderEntry{
-        Point<d, Metric> center;
+        Pt center;
         double radius;
         size_t parent_index;
         double left_radius;
@@ -133,8 +136,8 @@ using BallTreeUPtr = std::unique_ptr<BallTree<d, Metric>>;
 /**
  * @brief Type alias for vector of constant Point pointers.
  */
-template <std::size_t d, typename Metric>
-using PtVec = std::vector<Point<d, Metric>>;
+template <std::size_t d>
+using PtVec = std::vector<std::array<double, d>>;
 
 /**
  * @brief Type alias for max-heap of BallTree pointers, ordered by radius.
@@ -147,7 +150,7 @@ using BallHeap = std::priority_queue<
                                 >;
 
 template<size_t d, typename Metric>
-BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts);
+BallTreeUPtr<d, Metric> greedy_tree(PtVec<d>& pts, Metric metric);
 
 #include<balltree_impl.hpp>
 

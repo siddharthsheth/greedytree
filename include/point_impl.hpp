@@ -46,17 +46,17 @@ bool Point<d,Metric>::operator<(const Point& other) const{
     return true;
 }
 
-// Distance (delegated to metric)
-template <std::size_t d, typename Metric>
-double Point<d,Metric>::dist(const Point& other) const {
-    return Metric::template dist<d>(*this, other);
-}
+// // Distance (delegated to metric)
+// template <std::size_t d, typename Metric>
+// double Point<d,Metric>::dist(const Point& other) const {
+//     return Metric::template dist<d>(*this, other);
+// }
 
-// Compare Distance (delegated to metric)
-template <std::size_t d, typename Metric>
-double Point<d,Metric>::compare_dist(const Point& other) const {
-    return Metric::template compare_dist<d>(*this, other);
-}
+// // Compare Distance (delegated to metric)
+// template <std::size_t d, typename Metric>
+// double Point<d,Metric>::compare_dist(const Point& other) const {
+//     return Metric::template compare_dist<d>(*this, other);
+// }
 
 // Helper function to combine hashes (from Boost)
 inline void hash_combine(std::size_t& seed, std::size_t value) {

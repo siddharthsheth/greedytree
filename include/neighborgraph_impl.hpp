@@ -1,5 +1,8 @@
 template <std::size_t d, typename Metric>
-NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& pts): centers_moved(false){
+NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& pts,
+                                        Metric metric):
+                                        centers_moved(false),
+                                        metric(metric){
 
     // reserve space for vector of cells
     cells.reserve(pts.size());
@@ -8,13 +11,21 @@ NeighborGraph<d, Metric>::NeighborGraph(vector<Pt>& pts): centers_moved(false){
     std::swap(pts.front(), pts.back());
     Pt root_pt = std::move(pts.back());
     pts.pop_back();
+
+    std::vector<double> distances;
+    std::transform(pts.begin(), pts.end(),
+                    std::back_inserter(distances),
+                    [&root_pt, &metric](const Pt& pt){
+                        return metric.compare_dist(root_pt, pt); 
+                    });
     
     // initialize root cell
-    cells.push_back(Cell(std::move(root_pt)));
+    cells.push_back(Cell(std::move(root_pt), metric));
     CellRef root = cells[0];
 
     // point location for root cell
     root.points = std::move(pts);
+    root.distances = std::move(distances);
 
     // radius update for root cell
     root.update_radius();
@@ -50,34 +61,152 @@ void NeighborGraph<d, Metric>::add_cell(){
 
 template <std::size_t d, typename Metric>
 void NeighborGraph<d, Metric>::rebalance(size_t i, size_t j){
-    debug_log("rebalance: PL from " << cells[j].center << " to " << cells[i].center);
+    debug_log("rebalance: PL on " << cells[j].points.size() << " points from " << cells[j].center << " to " << cells[i].center);
     
     CellRef a = cells[i];
     CellRef b = cells[j];
+
+    if(b.points.empty())
+        return;
+
+    Pt& a_center = a.center;
     
     // partition the b.points into those that stay and those that move
-    auto iter = std::partition(b.points.begin(), b.points.end(), [&](Pt& p){
-        return a.compare_dist(p) >= b.compare_dist(p);
-    });
+    // auto iter = std::partition(b.points.begin(), b.points.end(), [&](Pt& p){
+    //     return a.compare_dist(p) >= b.compare_dist(p);
+    // });
     // b.points.begin() ... iter should stay and iter ... b.points.end() should move
+    
+    // std::transform(b.points.begin(), b.points.end(),
+    //                 std::back_inserter(a_distances),
+    //                 [&a_center](const Pt& pt){ return a_center.compare_dist(pt); });
+    // a_distances.reserve(b.points.size());
+    for(Pt& pt:b.points)
+        a_distances.push_back(metric.compare_dist(a_center, pt));
+    
+    bool farthest_moved = a_distances[0] < b.distances[0];
+
+    size_t l_i = 0, r_i = b.points.size()-1;
+    while(l_i <= r_i){
+        if(a_distances[l_i] < b.distances[l_i]){
+            std::swap(b.points[l_i], b.points[r_i]);
+            b.distances[l_i] = b.distances[r_i];
+            b.distances[r_i] = a_distances[l_i];
+            a_distances[l_i] = a_distances[r_i];
+            if(r_i == 0)
+                break;
+            r_i--;
+        } else
+            l_i++;
+    }
+    // 0 ... l_i-1 should stay and l_i ... b.points.back() should move
+    // debug_log("rebalance: " << l_i << " " << r_i << " " << b.points.size());
 
     // if something should move
-    if(iter != b.points.end()){
+    if(l_i != b.points.size()){
         // mark the current cell as affected
         affected_cells.push_back(j);
 
         // move the points to a
         a.points.insert(a.points.end(),
-                        std::make_move_iterator(iter),
+                        std::make_move_iterator(b.points.begin()+l_i),
                         std::make_move_iterator(b.points.end()));
-        // update the points of b
-        b.points.erase(iter, b.points.end());
-        b.points.shrink_to_fit();
-        // update the radius of b
-        b.update_radius();
-    }
+        a.distances.insert(a.distances.end(),
+                        b.distances.begin()+l_i,
+                        b.distances.end());
 
+        // update the points of b
+        b.points.erase(b.points.begin()+l_i, b.points.end());
+        // b.points.shrink_to_fit();
+        b.distances.erase(b.distances.begin()+l_i, b.distances.end());
+        // b.distances.shrink_to_fit();
+        // update the radius of b
+        if(farthest_moved)
+            b.update_radius();
+    }
+    a_distances.clear();
 }
+
+// template <std::size_t d, typename Metric>
+// void NeighborGraph<d, Metric>::rebalance(size_t i, size_t j){
+//     debug_log("rebalance: PL on " << cells[j].points.size() << " points from " << cells[j].center << " to " << cells[i].center);
+    
+//     CellRef a = cells[i];
+//     CellRef b = cells[j];
+
+//     if(b.points.empty())
+//         return;
+
+//     Pt& a_center = a.center;
+    
+//     // partition the b.points into those that stay and those that move
+//     // auto iter = std::partition(b.points.begin(), b.points.end(), [&](Pt& p){
+//     //     return a.compare_dist(p) >= b.compare_dist(p);
+//     // });
+//     // b.points.begin() ... iter should stay and iter ... b.points.end() should move
+    
+//     // std::transform(b.points.begin(), b.points.end(),
+//     //                 std::back_inserter(a_distances),
+//     //                 [&a_center](const Pt& pt){ return a_center.compare_dist(pt); });
+//     // a_distances.reserve(b.points.size());
+//     for(Pt& pt:b.points)
+//         a_distances.push_back(metric.compare_dist(a_center, pt));
+    
+//     bool farthest_moved = a_distances[0] < b.distances[0];
+
+//     move_idx.reserve(b.points.size());
+
+//     for (size_t k = 0; k < b.points.size(); ++k)
+//         if (a_distances[k] < b.distances[k])
+//             move_idx.push_back(k);
+
+//     // if something should move
+//     if (!move_idx.empty()) {
+//         affected_cells.push_back(j);
+
+//         const size_t n_move = move_idx.size();
+
+//         // Compact new points/distances for `a` and build a keep list for `b`
+//         a.points.reserve(n_move);
+//         a.distances.reserve(n_move);
+
+//         for (size_t idx : move_idx){
+//             a.points.push_back(std::move(b.points[idx]));
+//             a.distances.push_back(a_distances[idx]);
+//         }
+
+//         // a.points.insert(a.points.end(),
+//         //                 std::make_move_iterator(move_pts.begin()),
+//         //                 std::make_move_iterator(move_pts.end()));
+//         // a.distances.insert(a.distances.end(),
+//         //                 move_dists.begin(),
+//         //                 move_dists.end());
+
+//         // Rebuild b.points and b.distances in place (erase gaps)
+//         keep_pts.reserve(b.points.size() - n_move);
+//         keep_dists.reserve(b.distances.size() - n_move);
+
+//         for (size_t k = 0; k < b.points.size(); ++k) {
+//             if (a_distances[k] >= b.distances[k]) {
+//                 keep_pts.push_back(std::move(b.points[k]));
+//                 keep_dists.push_back(b.distances[k]);
+//             }
+//         }
+
+//         b.points.swap(keep_pts);
+//         b.distances.swap(keep_dists);
+
+//         if (farthest_moved)
+//             b.update_radius();
+//     }
+//     a_distances.clear();
+//     move_idx.clear();
+//     keep_idx.clear();
+//     // move_dists.clear();
+//     // move_pts.clear();
+//     keep_dists.clear();
+//     keep_pts.clear();
+// }
 
 template <std::size_t d, typename Metric>
 inline std::pair<size_t, size_t> NeighborGraph<d, Metric>::init_new_cell(){
@@ -88,7 +217,7 @@ inline std::pair<size_t, size_t> NeighborGraph<d, Metric>::init_new_cell(){
     
     // create new cell centered at this point
     debug_log("add_cell: New center is " << center);
-    cells.push_back(Cell(std::move(center)));
+    cells.push_back(Cell(std::move(center), metric));
     // add edge from new cell to itself
     size_t newcell_i = cells.size()-1;
     cells.back().nbrs.push_back(newcell_i);
@@ -138,9 +267,9 @@ inline void NeighborGraph<d, Metric>::prune_edges(){
     // it should be noted that this pruning implementation is not bidirectional
     for(size_t i: affected_cells){
         // check which edges with cells[i] can be pruned
-        auto iter = std::partition(cells[i].nbrs.begin(), cells[i].nbrs.end(), 
+        auto iter = std::remove_if(cells[i].nbrs.begin(), cells[i].nbrs.end(), 
                 [&](const size_t j){
-                    return is_close_enough(i, j);
+                    return !(is_close_enough(i, j));
                 });
         // now cells[i].nbrs.begin() ... iter cannot be pruned
         // so we prune the remaining edges
@@ -190,11 +319,11 @@ size_t NeighborGraph<d, Metric>::heap_top(){
 }
 
 template<size_t d, typename Metric>
-std::vector<Point<d, Metric>> NeighborGraph<d, Metric>::get_permutation(bool move){
-    std::vector<Pt> output;
+void NeighborGraph<d, Metric>::get_permutation(bool move, std::vector<Pt>& output){
+    output.clear();
     if(centers_moved){
         debug_log("get_permutation: Cells do not exist");
-        return output;
+        return;
     }
     output.reserve(cells.size());
     // if centers are to be moved, move them
@@ -208,5 +337,4 @@ std::vector<Point<d, Metric>> NeighborGraph<d, Metric>::get_permutation(bool mov
         for(auto&c: cells)
             output.push_back(c.center);
     }
-    return output;
 }

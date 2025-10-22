@@ -1,6 +1,6 @@
 template<size_t d, typename Metric>
-BallTree<d, Metric>::BallTree(PtPtr& p)
-    : center(p), radius(0), size(1), left(nullptr), right(nullptr) {}
+BallTree<d, Metric>::BallTree(PtPtr& p, Metric metric)
+    : center(p), radius(0), size(1), left(nullptr), right(nullptr), metric(metric) {}
 
 template<size_t d, typename Metric>
 bool BallTree<d, Metric>::isleaf(){
@@ -9,7 +9,7 @@ bool BallTree<d, Metric>::isleaf(){
 
 template<size_t d, typename Metric>
 double BallTree<d, Metric>::dist(PtPtr p){
-    return center->dist(*p);
+    return metric.dist(*center, *p);
 }
 
 template<size_t d, typename Metric>
@@ -26,7 +26,7 @@ void BallTree<d, Metric>::get_traversal(vector<HeapOrderEntry>& output){
     output.reserve(size);
     output.push_back({*center, radius, 0, 0.0});
     
-    std::unordered_map<Point<d,Metric>, size_t> index;
+    std::unordered_map<std::array<double, d>, size_t> index;
     index[*center] = 0;
     
     auto to_traverse = heap();
@@ -65,9 +65,9 @@ void BallTree<d, Metric>::get_traversal(vector<BallTreePtr>& output){
 }
 
 template<size_t d, typename Metric>
-BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts){
+BallTreeUPtr<d, Metric> greedy_tree(PtVec<d>& pts, Metric metric){
     // Construct the tree topology
-    auto root = construct_tree(pts);
+    auto root = construct_tree(pts, metric);
     // Compute radii for each node
     compute_radii(root.get());
 
@@ -75,16 +75,16 @@ BallTreeUPtr<d, Metric> greedy_tree(PtVec<d, Metric>& pts){
 }
 
 template<size_t d, typename Metric>
-BallTreeUPtr<d, Metric> construct_tree(PtVec<d, Metric>& pts)
+BallTreeUPtr<d, Metric> construct_tree(PtVec<d>& pts, Metric metric)
 {
-    using PtPtr = const Point<d, Metric>*;
+    using PtPtr = const std::array<double, d>*;
     using BallTreePtr = BallTree<d, Metric>*;
     
     vector<size_t> pred;
-    clarkson(pts, pred);
+    clarkson(pts, pred, metric);
     
     PtPtr root_pt = &pts[0];
-    auto root = std::make_unique<BallTree<d, Metric>>(root_pt);
+    auto root = std::make_unique<BallTree<d, Metric>>(root_pt, metric);
     
     // unordered_map<size_t, BallTreePtr> leaf;
     vector<BallTreePtr> leaf(pts.size(), nullptr);
@@ -94,8 +94,8 @@ BallTreeUPtr<d, Metric> construct_tree(PtVec<d, Metric>& pts)
         auto node = leaf[pred[i]];
         PtPtr right_pt = &pts[i];
         
-        node->left = std::make_unique<BallTree<d, Metric>>(node->center);
-        node->right = std::make_unique<BallTree<d, Metric>>(right_pt);
+        node->left = std::make_unique<BallTree<d, Metric>>(node->center, metric);
+        node->right = std::make_unique<BallTree<d, Metric>>(right_pt, metric);
         
         leaf[pred[i]] = (node->left).get();
         leaf[i] = (node->right).get();
@@ -138,7 +138,7 @@ void compute_radii(BallTree<d, Metric>* root) {
 }
 
 template <size_t d, typename Metric>
-const Point<d, Metric>* BallTree<d, Metric>::nearest(PtPtr query){
+const std::array<double, d>* BallTree<d, Metric>::nearest(PtPtr query){
     PtPtr nearest = nullptr;
     double nn_dist = std::numeric_limits<double>::max();
     
@@ -159,7 +159,7 @@ const Point<d, Metric>* BallTree<d, Metric>::nearest(PtPtr query){
 }
 
 template <size_t d, typename Metric>
-const Point<d, Metric>* BallTree<d, Metric>::farthest(PtPtr query){
+const std::array<double, d>* BallTree<d, Metric>::farthest(PtPtr query){
     PtPtr farthest = nullptr;
     double fn_dist = 0.0;
     
@@ -214,7 +214,7 @@ void BallTree<d, Metric>::generic_search(Update update, ViableCondition is_viabl
 }
 
 template <size_t d, typename Metric>
-vector<const Point<d, Metric>*> BallTree<d, Metric>::points(){
+vector<const std::array<double, d>*> BallTree<d, Metric>::points(){
     deque<BallTree*> to_traverse({this});
     vector<PtPtr> output;
     while(!to_traverse.empty()){

@@ -86,21 +86,57 @@ void NeighborGraph<d, Metric>::rebalance(size_t i, size_t j){
     
     bool farthest_moved = a_distances[0] < b.distances[0];
 
-    size_t l_i = 0, r_i = b.points.size()-1;
-    while(l_i <= r_i){
-        if(a_distances[l_i] < b.distances[l_i]){
-            std::swap(b.points[l_i], b.points[r_i]);
-            b.distances[l_i] = b.distances[r_i];
-            b.distances[r_i] = a_distances[l_i];
-            a_distances[l_i] = a_distances[r_i];
-            if(r_i == 0)
-                break;
-            r_i--;
-        } else
+    // size_t l_i = 0, r_i = b.points.size()-1;
+    // while(l_i <= r_i){
+    //     if(a_distances[l_i] < b.distances[l_i]){
+    //         std::swap(b.points[l_i], b.points[r_i]);
+    //         b.distances[l_i] = b.distances[r_i];
+    //         b.distances[r_i] = a_distances[l_i];
+    //         a_distances[l_i] = a_distances[r_i];
+    //         if(r_i == 0)
+    //             break;
+    //         r_i--;
+    //     } else
+    //         l_i++;
+    // }
+    // // 0 ... l_i-1 should stay and l_i ... b.points.back() should move
+
+    // // if something should move
+    // if(l_i != b.points.size()){
+    //     // mark the current cell as affected
+    //     affected_cells.push_back(j);
+
+    //     // move the points to a
+    //     a.points.insert(a.points.end(),
+    //                     std::make_move_iterator(b.points.begin()+l_i),
+    //                     std::make_move_iterator(b.points.end()));
+    //     a.distances.insert(a.distances.end(),
+    //                     b.distances.begin()+l_i,
+    //                     b.distances.end());
+
+    //     // update the points of b
+    //     b.points.erase(b.points.begin()+l_i, b.points.end());
+    //     // b.points.shrink_to_fit();
+    //     b.distances.erase(b.distances.begin()+l_i, b.distances.end());
+    //     // b.distances.shrink_to_fit();
+    //     // update the radius of b
+    //     if(farthest_moved)
+    //         b.update_radius();
+    // }
+
+    a.points.reserve(b.points.size());
+    a.distances.reserve(b.distances.size());
+    size_t l_i = 0;
+    for(size_t k = 0; k < b.points.size(); k++)
+        if(a_distances[k] < b.distances[k]) {
+            a.points.push_back(std::move(b.points[k]));
+            a.distances.push_back(a_distances[k]);
+        } else {
+            b.points[l_i] = std::move(b.points[k]);
+            b.distances[l_i] = b.distances[k];
             l_i++;
-    }
+        }
     // 0 ... l_i-1 should stay and l_i ... b.points.back() should move
-    // debug_log("rebalance: " << l_i << " " << r_i << " " << b.points.size());
 
     // if something should move
     if(l_i != b.points.size()){
@@ -108,12 +144,12 @@ void NeighborGraph<d, Metric>::rebalance(size_t i, size_t j){
         affected_cells.push_back(j);
 
         // move the points to a
-        a.points.insert(a.points.end(),
-                        std::make_move_iterator(b.points.begin()+l_i),
-                        std::make_move_iterator(b.points.end()));
-        a.distances.insert(a.distances.end(),
-                        b.distances.begin()+l_i,
-                        b.distances.end());
+        // a.points.insert(a.points.end(),
+        //                 std::make_move_iterator(b.points.begin()+l_i),
+        //                 std::make_move_iterator(b.points.end()));
+        // a.distances.insert(a.distances.end(),
+        //                 b.distances.begin()+l_i,
+        //                 b.distances.end());
 
         // update the points of b
         b.points.erase(b.points.begin()+l_i, b.points.end());
@@ -124,6 +160,7 @@ void NeighborGraph<d, Metric>::rebalance(size_t i, size_t j){
         if(farthest_moved)
             b.update_radius();
     }
+
     a_distances.clear();
 }
 

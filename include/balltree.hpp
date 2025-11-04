@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <deque>
 #include <boost/unordered/unordered_flat_set.hpp>
+#include <cmath>
 
 /**
  * @brief BallTree node for hierarchical spatial partitioning.

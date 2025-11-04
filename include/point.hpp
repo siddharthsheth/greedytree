@@ -54,9 +54,9 @@ static std::ofstream stat_stream("stats.csv", std::ios::app);
 #  define stat_log(x) do {} while (0)
 #endif
 
-// // Forward declaration for friend operator<<
-// template <std::size_t d, typename Metric>
-// std::ostream& operator<<(std::ostream& os, const Point<d, Metric>& p);
+// Forward declaration for friend operator<<
+template <std::size_t d, typename Metric>
+std::ostream& operator<<(std::ostream& os, const std::array<double, d>& p);
 
 // /**
 //  * @brief Represents a point in d-dimensional space with a given metric.
@@ -143,34 +143,45 @@ static std::ofstream stat_stream("stats.csv", std::ios::app);
 // template <std::size_t d, typename Metric>
 // const Point<d, Metric> origin;
 
-// /**
-//  * @brief Output operator for Point.
-//  * @tparam d Dimensionality.
-//  * @tparam Metric Metric type.
-//  * @param os Output stream.
-//  * @param p Point to print.
-//  * @return Reference to output stream.
-//  */
-// template <std::size_t d, typename Metric>
-// std::ostream& operator<<(std::ostream& os, const Point<d,Metric>& p) {
-//     os << "(";
-//     for (std::size_t i = 0; i < d; ++i) {
-//         os << p[i];
-//         if (i != d - 1) os << ", ";
-//     }
-//     os << ")";
-//     return os;
-// }
+/**
+ * @brief Output operator for Point.
+ * @tparam d Dimensionality.
+ * @param os Output stream.
+ * @param p Point to print.
+ * @return Reference to output stream.
+ */
+template <std::size_t d>
+std::ostream& operator<<(std::ostream& os, const std::array<double, d>& p) {
+    os << "(";
+    for (std::size_t i = 0; i < d; ++i) {
+        os << p[i];
+        if (i != d - 1) os << ", ";
+    }
+    os << ")";
+    return os;
+}
 
-// namespace std {
-//     /**
-//      * @brief Hash specialization for Point, for use in unordered containers.
-//      */
-//     template <std::size_t d, typename Metric>
-//     struct hash<Point<d, Metric>> {
-//         std::size_t operator()(const Point<d, Metric>& p) const;
-//     };
-// }
+// Helper function to combine hashes (from Boost)
+inline void hash_combine(std::size_t& seed, std::size_t value) {
+    seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+namespace std {
+    /**
+     * @brief Hash specialization for Point, for use in unordered containers.
+     */
+    template <std::size_t d>
+    struct hash<std::array<double, d>> {
+        std::size_t operator()(const std::array<double, d>& p) const{
+            size_t seed = 0;
+            for (size_t i = 0; i < d; ++i) {
+                size_t h = std::hash<double>{}(p[i]);
+                hash_combine(seed, h);
+            }
+            return seed;
+        }
+    };
+}
 
 // #include "point_impl.hpp"
 
